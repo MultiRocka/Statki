@@ -12,11 +12,11 @@ namespace Statki.Board
     public class BoardTile : Button
     {
         public bool IsOccupied { get; set; } = false; 
-        public bool IsHit { get; private set; } = false; 
-
+        public bool IsHit { get; private set; } = false;
+        public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         public BoardTile()
         {
-            this.Background = Brushes.LightBlue; 
+            this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
         }
 
@@ -48,6 +48,12 @@ namespace Statki.Board
         public void SetBackgroundImage(ImageSource image)
         {
             this.Background = new ImageBrush(image);
+        }
+
+        public void ResetBackground()
+        {
+            if (!IsOccupied && !IsHit)
+                this.Background = DefaultBackground;
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Statki.Board
     public class BoardTileDragHandler
     {
         private readonly Grid _gameGrid;
+        private List<BoardTile> _currentShipTiles = new List<BoardTile>(); // Śledzi bieżące pola zajęte przez statek
 
         public BoardTileDragHandler(Grid gameGrid)
         {
@@ -24,7 +25,7 @@ namespace Statki.Board
         {
             if (e.Data.GetData(typeof(Ship)) is Ship ship)
             {
-                HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen);
+                HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
             }
         }
 
@@ -38,12 +39,49 @@ namespace Statki.Board
         {
             if (e.Data.GetData(typeof(Ship)) is Ship ship)
             {
-                HighlightTiles(sender as BoardTile, ship, Brushes.LightBlue);
+                HighlightTiles(sender as BoardTile, ship, Brushes.LightBlue, temporary: true);
             }
         }
 
-        private void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor)
+        public void BoardTile_Drop(object sender, DragEventArgs e)
         {
+            if (e.Data.GetData(typeof(Ship)) is Ship ship)
+            {
+                ClearPreviousShipTiles(); // Zwolnij poprzednie pola statku
+                HighlightTiles(sender as BoardTile, ship, Brushes.Blue, temporary: false); // Nowa pozycja
+
+                // Aktualizujemy listę bieżących pól statku
+                _currentShipTiles = GetOccupiedTiles(sender as BoardTile, ship);
+            }
+        }
+
+        private void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
+        {
+            int startRow = Grid.GetRow(startTile);
+            int startCol = Grid.GetColumn(startTile);
+
+            for (int i = 0; i < ship.Length; i++)
+            {
+                for (int j = 0; j < ship.Width; j++)
+                {
+                    int row = ship.IsHorizontal ? startRow + j : startRow + i;
+                    int col = ship.IsHorizontal ? startCol + i : startCol + j;
+
+                    BoardTile gridTile = GetTileAtPosition(row, col);
+
+                    // Podświetl tylko te kafelki, które nie są już zajęte
+                    if (gridTile != null && (!gridTile.IsOccupied || !temporary))
+                    {
+                        gridTile.Background = highlightColor;
+                        if (!temporary) gridTile.IsOccupied = true;
+                    }
+                }
+            }
+        }
+
+        private List<BoardTile> GetOccupiedTiles(BoardTile startTile, Ship ship)
+        {
+            List<BoardTile> occupiedTiles = new List<BoardTile>();
             int startRow = Grid.GetRow(startTile);
             int startCol = Grid.GetColumn(startTile);
 
@@ -57,10 +95,21 @@ namespace Statki.Board
                     BoardTile gridTile = GetTileAtPosition(row, col);
                     if (gridTile != null)
                     {
-                        gridTile.Background = highlightColor;
+                        occupiedTiles.Add(gridTile);
                     }
                 }
             }
+            return occupiedTiles;
+        }
+
+        private void ClearPreviousShipTiles()
+        {
+            foreach (var tile in _currentShipTiles)
+            {
+                tile.IsOccupied = false;
+                tile.ResetBackground();
+            }
+            _currentShipTiles.Clear();
         }
 
         private BoardTile GetTileAtPosition(int row, int col)
@@ -75,4 +124,6 @@ namespace Statki.Board
             return null;
         }
     }
+
+
 }

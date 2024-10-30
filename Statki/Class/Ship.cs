@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows;
 using System.Drawing;
+using Statki.Board;
 namespace Statki.Class
 {
     public class Ship
@@ -16,6 +17,7 @@ namespace Statki.Class
         public string Name { get; set; }
         public bool IsHorizontal { get; set; } = true; 
         public bool IsPlaced { get; set; } = false;
+        public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
 
         public Ship(string name, int length, int width)
         {
