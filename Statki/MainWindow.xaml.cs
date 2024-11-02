@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,13 +13,13 @@ namespace Statki
     {
         private Grid gameGrid;
         private BoardTileDragHandler _dragHandler;
-        private List<(Ship ship, int startRow, int startCol)> placedShips = new List<(Ship, int, int)>();
+        private List<Ship> ships = new List<Ship>(); // Lista wszystkich statków
 
         public MainWindow()
         {
             InitializeComponent();
             CreateLayout();
-            CreateShip(); // Tworzymy statek w lewym panelu
+            CreateShips(); // Tworzymy statki w lewym panelu
         }
 
         private void CreateLayout()
@@ -87,16 +88,15 @@ namespace Statki
                         Name = $"{(char)(col + 64)}{row}",
                         HorizontalAlignment = HorizontalAlignment.Stretch,
                         VerticalAlignment = VerticalAlignment.Stretch,
-                        AllowDrop = true 
+                        AllowDrop = true
                     };
-                    tile.Drop += BoardTile_Drop; // Obsługa zdarzenia Drop
+                    tile.Drop += _dragHandler.BoardTile_Drop; // Obsługa zdarzenia Drop
                     Grid.SetRow(tile, row);
                     Grid.SetColumn(tile, col);
                     gameGrid.Children.Add(tile);
                     tile.DragEnter += _dragHandler.BoardTile_DragEnter;
                     tile.DragOver += _dragHandler.BoardTile_DragOver;
                     tile.DragLeave += _dragHandler.BoardTile_DragLeave;
-
                 }
             }
 
@@ -108,21 +108,25 @@ namespace Statki
             this.Content = mainGrid;
         }
 
-        private void CreateShip()
+        private void CreateShips()
         {
-            // Tworzymy testowy statek 2x1
-            Ship testShip = new Ship("Test Ship", 3, 2); // Długość 2, szerokość 1
-            StackPanel shipPanel = testShip.CreateVisualRepresentation();
-            Ship testShip2 = new Ship("Test Ship", 4, 1); // Długość 2, szerokość 1
+            // Tworzymy statki
+            Ship testShip1 = new Ship("Test Ship 1", 3, 2);
+            StackPanel shipPanel1 = testShip1.CreateVisualRepresentation();
+            Ship testShip2 = new Ship("Test Ship 2", 4, 1);
             StackPanel shipPanel2 = testShip2.CreateVisualRepresentation();
 
             // Dodanie obsługi przeciągania statku
-            shipPanel.MouseMove += ShipPanel_MouseMove;
+            shipPanel1.MouseMove += ShipPanel_MouseMove;
             shipPanel2.MouseMove += ShipPanel_MouseMove;
+
+            // Dodanie statków do listy
+            ships.Add(testShip1);
+            ships.Add(testShip2);
 
             // Znalezienie lewego panelu (pierwsza kolumna głównej siatki)
             StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
-            leftPanel.Children.Add(shipPanel);
+            leftPanel.Children.Add(shipPanel1);
             leftPanel.Children.Add(shipPanel2);
         }
 
@@ -144,51 +148,6 @@ namespace Statki
             e.Handled = true;
         }
 
-
-        public void BoardTile_Drop(object sender, DragEventArgs e)
-        {
-            if (e.Data.GetData(typeof(Ship)) is Ship ship && sender is BoardTile tile)
-            {
-                // Jeśli statek jest już umieszczony, wyczyść poprzednie pola
-                if (ship.IsPlaced)
-                {
-                    ClearPreviousTiles(ship);
-                }
-
-                // Ustawienia dla nowej pozycji
-                int startRow = Grid.GetRow(tile);
-                int startCol = Grid.GetColumn(tile);
-                int endRow = ship.IsHorizontal ? startRow : startRow + ship.Width - 1;
-                int endCol = ship.IsHorizontal ? startCol + ship.Length - 1 : startCol;
-
-                if (endRow > 10 || endCol > 10)
-                {
-                    MessageBox.Show("Statek nie zmieści się na planszy!");
-                    return;
-                }
-
-                // Aktualizujemy pola jako zajęte i dodajemy je do listy statku
-                ship.OccupiedTiles.Clear();
-                for (int i = 0; i < ship.Length; i++)
-                {
-                    for (int j = 0; j < ship.Width; j++)
-                    {
-                        int row = ship.IsHorizontal ? startRow + j : startRow + i;
-                        int col = ship.IsHorizontal ? startCol + i : startCol + j;
-                        BoardTile gridTile = GetTileAtPosition(row, col);
-
-                        if (gridTile != null)
-                        {
-                            gridTile.Background = Brushes.Blue;
-                            gridTile.IsOccupied = true;
-                            ship.OccupiedTiles.Add(gridTile); // Dodajemy pole do zajętych
-                        }
-                    }
-                }
-                ship.IsPlaced = true; // Ustawiamy jako umieszczony
-            }
-        }
-
         private void ClearPreviousTiles(Ship ship)
         {
             foreach (var tile in ship.OccupiedTiles)
@@ -198,8 +157,6 @@ namespace Statki
             }
             ship.OccupiedTiles.Clear(); // Czyścimy listę
         }
-
-
 
         private BoardTile GetTileAtPosition(int row, int col)
         {
