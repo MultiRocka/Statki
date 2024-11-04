@@ -1,38 +1,65 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace Statki.Board
 {
+    public enum HitStatus
+    {
+        None,
+        Miss,
+        Hit
+    }
+
     public class BoardTile : Button
     {
-        public bool IsOccupied { get; set; } = false; 
-        public bool IsHit { get; private set; } = false;
+        public bool IsOccupied { get; set; } = false;
+        public HitStatus HitStatus { get; private set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
+        private Brush PreviousBackground { get; set; }
+
         public BoardTile()
         {
             this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
+            this.MouseEnter += BoardTile_MouseEnter;
+            this.MouseLeave += BoardTile_MouseLeave;
         }
 
         private void BoardTile_Click(object sender, RoutedEventArgs e)
         {
-            if (IsHit) return; 
+            if (HitStatus != HitStatus.None) return; // Jeśli już kliknięte, wychodzimy
 
-            IsHit = true;
             if (IsOccupied)
             {
-                this.Background = Brushes.Red; 
+                HitStatus = HitStatus.Hit;
+                this.Background = Brushes.Red; // Trafienie w statek
+                Console.WriteLine($"Hit on {this.Name}");
                 // Możesz dodać logikę zniszczenia statku
             }
             else
             {
-                this.Background = Brushes.Gray; 
+                HitStatus = HitStatus.Miss;
+                this.Background = Brushes.Gray; // Nietrafienie
+                Console.WriteLine($"Miss on {this.Name}");
+            }
+        }
+
+        private void BoardTile_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (HitStatus == HitStatus.None)
+            {
+                PreviousBackground = this.Background; // Zachowaj aktualny kolor
+                this.Background = Brushes.LightGray;   // Kolor najechania myszką
+            }
+        }
+
+        private void BoardTile_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            if (HitStatus == HitStatus.None)
+            {
+                this.Background = PreviousBackground; // Przywraca poprzedni kolor
             }
         }
 
@@ -40,8 +67,8 @@ namespace Statki.Board
         public void Reset()
         {
             IsOccupied = false;
-            IsHit = false;
-            this.Background = Brushes.LightBlue;
+            HitStatus = HitStatus.None;
+            this.Background = DefaultBackground;
         }
 
         // Opcjonalnie: metoda do ustawiania tekstury lub animacji
@@ -52,7 +79,7 @@ namespace Statki.Board
 
         public void ResetBackground()
         {
-            if (!IsOccupied && !IsHit)
+            if (HitStatus == HitStatus.None)
                 this.Background = DefaultBackground;
         }
     }

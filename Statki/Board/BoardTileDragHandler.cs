@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Statki.Class; 
+﻿using System.Collections.Generic;
+using System.Windows;
+using System.Windows.Media;
+using Statki.Class;
 using Statki.Board;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows;
 
 namespace Statki.Board
 {
     public class BoardTileDragHandler
     {
         private readonly Grid _gameGrid;
-        private List<BoardTile> _currentShipTiles = new List<BoardTile>(); // Śledzi bieżące pola zajęte przez statek
 
         public BoardTileDragHandler(Grid gameGrid)
         {
@@ -45,43 +40,65 @@ namespace Statki.Board
 
         public void BoardTile_Drop(object sender, DragEventArgs e)
         {
-            if (e.Data.GetData(typeof(Ship)) is Ship ship)
+            if (e.Data.GetData(typeof(Ship)) is Ship ship && sender is BoardTile tile)
             {
-                ClearPreviousShipTiles(); // Zwolnij poprzednie pola statku
-                HighlightTiles(sender as BoardTile, ship, Brushes.Blue, temporary: false); // Nowa pozycja
+                // Jeśli statek jest już umieszczony, wyczyść poprzednie pola
+                if (ship.IsPlaced)
+                {
+                    ClearPreviousTiles(ship);
+                }
 
-                // Aktualizujemy listę bieżących pól statku
-                _currentShipTiles = GetOccupiedTiles(sender as BoardTile, ship);
+                // Ustawienia dla nowej pozycji
+                int startRow = Grid.GetRow(tile);
+                int startCol = Grid.GetColumn(tile);
+                int endRow = ship.IsHorizontal ? startRow : startRow + ship.Width - 1;
+                int endCol = ship.IsHorizontal ? startCol + ship.Length - 1 : startCol;
+
+                if (endRow > 10 || endCol > 10)
+                {
+                    MessageBox.Show("Statek nie zmieści się na planszy!");
+                    return;
+                }
+
+                // Sprawdzenie, czy wszystkie pola są wolne
+                if (!CanPlaceShip(startRow, startCol, ship))
+                {
+                    MessageBox.Show("Nie możesz umieścić statku tutaj!");
+                    return;
+                }
+
+                // Aktualizujemy pola jako zajęte i dodajemy je do listy statku
+                ship.OccupiedTiles.Clear();
+                for (int i = 0; i < ship.Length; i++)
+                {
+                    for (int j = 0; j < ship.Width; j++)
+                    {
+                        int row = ship.IsHorizontal ? startRow + j : startRow + i;
+                        int col = ship.IsHorizontal ? startCol + i : startCol + j;
+                        BoardTile gridTile = GetTileAtPosition(row, col);
+
+                        if (gridTile != null)
+                        {
+                            gridTile.Background = Brushes.Blue;
+                            gridTile.IsOccupied = true;
+                            ship.OccupiedTiles.Add(gridTile);
+                        }
+                    }
+                }
+                ship.IsPlaced = true;
+
+                Console.WriteLine("Zajęte pola dla statku: " + ship.Name);
+                foreach (var occupiedTile in ship.OccupiedTiles)
+                {
+                    Console.WriteLine(occupiedTile.Name);
+                }
             }
         }
 
         private void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
         {
-            int startRow = Grid.GetRow(startTile);
-            int startCol = Grid.GetColumn(startTile);
+            if (startTile == null) return;
 
-            for (int i = 0; i < ship.Length; i++)
-            {
-                for (int j = 0; j < ship.Width; j++)
-                {
-                    int row = ship.IsHorizontal ? startRow + j : startRow + i;
-                    int col = ship.IsHorizontal ? startCol + i : startCol + j;
-
-                    BoardTile gridTile = GetTileAtPosition(row, col);
-
-                    // Podświetl tylko te kafelki, które nie są już zajęte
-                    if (gridTile != null && (!gridTile.IsOccupied || !temporary))
-                    {
-                        gridTile.Background = highlightColor;
-                        if (!temporary) gridTile.IsOccupied = true;
-                    }
-                }
-            }
-        }
-
-        private List<BoardTile> GetOccupiedTiles(BoardTile startTile, Ship ship)
-        {
-            List<BoardTile> occupiedTiles = new List<BoardTile>();
             int startRow = Grid.GetRow(startTile);
             int startCol = Grid.GetColumn(startTile);
 
@@ -95,21 +112,50 @@ namespace Statki.Board
                     BoardTile gridTile = GetTileAtPosition(row, col);
                     if (gridTile != null)
                     {
-                        occupiedTiles.Add(gridTile);
+                        if (temporary)
+                        {
+                            if (!gridTile.IsOccupied)
+                            {
+                                gridTile.Background = highlightColor;
+                            }
+                        }
+                        else
+                        {
+                            gridTile.Background = highlightColor;
+                            gridTile.IsOccupied = true;
+                        }
                     }
                 }
             }
-            return occupiedTiles;
         }
 
-        private void ClearPreviousShipTiles()
+        private bool CanPlaceShip(int startRow, int startCol, Ship ship)
         {
-            foreach (var tile in _currentShipTiles)
+            for (int i = 0; i < ship.Length; i++)
+            {
+                for (int j = 0; j < ship.Width; j++)
+                {
+                    int row = ship.IsHorizontal ? startRow + j : startRow + i;
+                    int col = ship.IsHorizontal ? startCol + i : startCol + j;
+
+                    BoardTile gridTile = GetTileAtPosition(row, col);
+                    if (gridTile == null || gridTile.IsOccupied)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private void ClearPreviousTiles(Ship ship)
+        {
+            foreach (var tile in ship.OccupiedTiles)
             {
                 tile.IsOccupied = false;
                 tile.ResetBackground();
             }
-            _currentShipTiles.Clear();
+            ship.OccupiedTiles.Clear(); // Czyścimy listę
         }
 
         private BoardTile GetTileAtPosition(int row, int col)
@@ -124,6 +170,4 @@ namespace Statki.Board
             return null;
         }
     }
-
-
 }

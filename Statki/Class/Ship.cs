@@ -1,13 +1,9 @@
-﻿using System;
+﻿using Statki.Board;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows;
-using System.Drawing;
-using Statki.Board;
+
 namespace Statki.Class
 {
     public class Ship
@@ -15,8 +11,10 @@ namespace Statki.Class
         public int Length { get; set; }
         public int Width { get; set; }
         public string Name { get; set; }
-        public bool IsHorizontal { get; set; } = true; 
+        public bool IsHorizontal { get; set; } = true;
         public bool IsPlaced { get; set; } = false;
+
+        // Lista przechowująca zajęte pola przez statek
         public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
 
         public Ship(string name, int length, int width)
@@ -30,13 +28,61 @@ namespace Statki.Class
         {
             StackPanel stackPanel = new StackPanel
             {
-                Orientation = IsHorizontal ? Orientation.Horizontal : Orientation.Vertical,
+                Orientation = IsHorizontal ? Orientation.Vertical : Orientation.Horizontal,
                 Background = Brushes.Gray,
-                Width = IsHorizontal ? Length * 35 : Width * 35, // Dostosowanie szerokości do orientacji
-                Height = IsHorizontal ? Width * 35 : Length * 35, // Dostosowanie wysokości do orientacji
                 Margin = new Thickness(10),
-                Tag = this // Przechowujemy statek w Tag
+                Tag = this
             };
+
+            // Tworzenie reprezentacji statku z uwzględnieniem orientacji i wymiarów
+            if (IsHorizontal)
+            {
+                for (int row = 0; row < Width; row++) // liczba wierszy zależna od szerokości
+                {
+                    StackPanel rowPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Horizontal
+                    };
+
+                    for (int col = 0; col < Length; col++) // liczba kolumn zależna od długości
+                    {
+                        Border segment = new Border
+                        {
+                            Width = 30,
+                            Height = 30,
+                            Background = Brushes.DarkGray,
+                            Margin = new Thickness(1)
+                        };
+                        rowPanel.Children.Add(segment);
+                    }
+
+                    stackPanel.Children.Add(rowPanel);
+                }
+            }
+            else
+            {
+                for (int col = 0; col < Length; col++) // liczba kolumn zależna od długości
+                {
+                    StackPanel colPanel = new StackPanel
+                    {
+                        Orientation = Orientation.Vertical
+                    };
+
+                    for (int row = 0; row < Width; row++) // liczba wierszy zależna od szerokości
+                    {
+                        Border segment = new Border
+                        {
+                            Width = 30,
+                            Height = 30,
+                            Background = Brushes.DarkGray,
+                            Margin = new Thickness(1)
+                        };
+                        colPanel.Children.Add(segment);
+                    }
+
+                    stackPanel.Children.Add(colPanel);
+                }
+            }
 
             return stackPanel;
         }
@@ -44,4 +90,3 @@ namespace Statki.Class
 
     }
 }
-
