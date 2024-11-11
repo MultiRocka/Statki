@@ -51,7 +51,7 @@ namespace Statki.Board
             if (HitStatus == HitStatus.None)
             {
                 PreviousBackground = this.Background; // Zachowaj aktualny kolor
-                this.Background = Brushes.LightGray;   // Kolor najechania myszką
+                this.Background = Brushes.Transparent;   // Kolor najechania myszką
             }
         }
 

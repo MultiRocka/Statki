@@ -14,6 +14,7 @@ namespace Statki
         private Grid gameGrid;
         private BoardTileDragHandler _dragHandler;
         private List<Ship> ships = new List<Ship>(); // Lista wszystkich statków
+        private KeyAndMouseMonitor shipDragHandler = new KeyAndMouseMonitor();
 
         public MainWindow()
         {
@@ -117,8 +118,14 @@ namespace Statki
             StackPanel shipPanel2 = testShip2.CreateVisualRepresentation();
 
             // Dodanie obsługi przeciągania statku
-            shipPanel1.MouseMove += ShipPanel_MouseMove;
-            shipPanel2.MouseMove += ShipPanel_MouseMove;
+            shipPanel1.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip1);
+   
+            shipPanel1.MouseMove += shipDragHandler.ShipPanel_MouseMove;
+            shipPanel1.MouseUp += shipDragHandler.ShipPanel_MouseUp;
+
+            shipPanel2.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip2);
+            shipPanel2.MouseMove += shipDragHandler.ShipPanel_MouseMove;
+            shipPanel2.MouseUp += shipDragHandler.ShipPanel_MouseUp;
 
             // Dodanie statków do listy
             ships.Add(testShip1);
@@ -130,21 +137,9 @@ namespace Statki
             leftPanel.Children.Add(shipPanel2);
         }
 
-        private void ShipPanel_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed && sender is StackPanel panel)
-            {
-                DragDrop.DoDragDrop(panel, panel.Tag, DragDropEffects.Move);
-
-                // Dodajemy efekt przeciągania
-                DragDrop.AddGiveFeedbackHandler(this, OnGiveFeedback);
-            }
-        }
 
         private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
-            // Ustawiamy kursor jako półprzezroczysty podczas przeciągania
-            Mouse.SetCursor(Cursors.None); // Ukrycie domyślnego kursora
             e.Handled = true;
         }
 

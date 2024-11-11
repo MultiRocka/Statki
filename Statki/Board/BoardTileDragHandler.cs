@@ -4,23 +4,30 @@ using System.Windows.Media;
 using Statki.Class;
 using Statki.Board;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Threading;
+using System.Runtime.InteropServices;
 
 namespace Statki.Board
 {
     public class BoardTileDragHandler
     {
         private readonly Grid _gameGrid;
-
+        private Ship _heldShip;
+        private readonly KeyAndMouseMonitor _keyAndMouseMonitor;
         public BoardTileDragHandler(Grid gameGrid)
         {
             _gameGrid = gameGrid;
+            _keyAndMouseMonitor = new KeyAndMouseMonitor();
         }
 
         public void BoardTile_DragEnter(object sender, DragEventArgs e)
         {
             if (e.Data.GetData(typeof(Ship)) is Ship ship)
             {
+                _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
+                Console.WriteLine("Działa to: " + _heldShip.Name);
             }
         }
 
@@ -35,6 +42,7 @@ namespace Statki.Board
             if (e.Data.GetData(typeof(Ship)) is Ship ship)
             {
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightBlue, temporary: true);
+                ClearAllHighlights();
             }
         }
 
@@ -54,9 +62,11 @@ namespace Statki.Board
                 int endRow = ship.IsHorizontal ? startRow : startRow + ship.Width - 1;
                 int endCol = ship.IsHorizontal ? startCol + ship.Length - 1 : startCol;
 
+                // Sprawdzenie, czy statek mieści się na planszy
                 if (endRow > 10 || endCol > 10)
                 {
                     MessageBox.Show("Statek nie zmieści się na planszy!");
+                    ClearAllHighlights(); // Resetowanie wszystkich podświetleń
                     return;
                 }
 
@@ -64,6 +74,7 @@ namespace Statki.Board
                 if (!CanPlaceShip(startRow, startCol, ship))
                 {
                     MessageBox.Show("Nie możesz umieścić statku tutaj!");
+                    ClearAllHighlights(); // Resetowanie wszystkich podświetleń
                     return;
                 }
 
@@ -92,10 +103,13 @@ namespace Statki.Board
                 {
                     Console.WriteLine(occupiedTile.Name);
                 }
+
+
             }
         }
 
-        private void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
+
+        public void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
         {
             if (startTile == null) return;
 
@@ -128,6 +142,17 @@ namespace Statki.Board
                 }
             }
         }
+        public void ClearAllHighlights()
+        {
+            foreach (var child in _gameGrid.Children)
+            {
+                if (child is BoardTile tile && !tile.IsOccupied)
+                {
+                    tile.ResetBackground(); // Resetowanie tła do wartości domyślnej
+                }
+            }
+        }
+
 
         private bool CanPlaceShip(int startRow, int startCol, Ship ship)
         {
@@ -158,7 +183,7 @@ namespace Statki.Board
             ship.OccupiedTiles.Clear(); // Czyścimy listę
         }
 
-        private BoardTile GetTileAtPosition(int row, int col)
+        public BoardTile GetTileAtPosition(int row, int col)
         {
             foreach (var child in _gameGrid.Children)
             {
@@ -169,5 +194,6 @@ namespace Statki.Board
             }
             return null;
         }
+
     }
 }
