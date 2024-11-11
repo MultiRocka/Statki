@@ -86,7 +86,44 @@ namespace Statki.Class
 
             return stackPanel;
         }
+        public void UpdateOccupiedTiles(int startRow, int startCol, Grid gameGrid)
+        {
+            OccupiedTiles.Clear(); // Wyczyść poprzednie zajęte pola
 
+            for (int i = 0; i < Length; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    int row = IsHorizontal ? startRow : startRow + j;
+                    int col = IsHorizontal ? startCol + i : startCol;
+
+                    BoardTile gridTile = GetTileAtPosition(row, col, gameGrid);
+                    if (gridTile != null)
+                    {
+                        OccupiedTiles.Add(gridTile);
+                    }
+                }
+            }
+        }
+
+        private BoardTile GetTileAtPosition(int row, int col, Grid gameGrid)
+        {
+            foreach (var child in gameGrid.Children)
+            {
+                if (child is BoardTile tile && Grid.GetRow(tile) == row && Grid.GetColumn(tile) == col)
+                {
+                    return tile;
+                }
+            }
+            return null;
+        }
+
+        public void Rotate()
+        {
+            int temp = Length;
+            Length = Width;
+            Width = temp;
+        }
 
     }
 }
