@@ -18,7 +18,7 @@ namespace Statki.Board
         public HitStatus HitStatus { get; private set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
-
+        public bool IsRestricted { get; set; } = false;
         public BoardTile()
         {
             this.Background = DefaultBackground;

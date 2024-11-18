@@ -117,9 +117,11 @@ namespace Statki
             Ship testShip2 = new Ship("Test Ship 2", 4, 1);
             StackPanel shipPanel2 = testShip2.CreateVisualRepresentation();
 
+            Ship testShip3 = new Ship("Test Ship 3", 2, 1);
+            StackPanel shipPanel3 = testShip3.CreateVisualRepresentation();
+
             // Dodanie obsługi przeciągania statku
             shipPanel1.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip1);
-   
             shipPanel1.MouseMove += shipDragHandler.ShipPanel_MouseMove;
             shipPanel1.MouseUp += shipDragHandler.ShipPanel_MouseUp;
 
@@ -127,14 +129,22 @@ namespace Statki
             shipPanel2.MouseMove += shipDragHandler.ShipPanel_MouseMove;
             shipPanel2.MouseUp += shipDragHandler.ShipPanel_MouseUp;
 
+            shipPanel3.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip2);
+            shipPanel3.MouseMove += shipDragHandler.ShipPanel_MouseMove;
+            shipPanel3.MouseUp += shipDragHandler.ShipPanel_MouseUp;
+
             // Dodanie statków do listy
             ships.Add(testShip1);
             ships.Add(testShip2);
+
+            ships.Add(testShip3);
 
             // Znalezienie lewego panelu (pierwsza kolumna głównej siatki)
             StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
             leftPanel.Children.Add(shipPanel1);
             leftPanel.Children.Add(shipPanel2);
+
+            leftPanel.Children.Add(shipPanel3);
         }
 
 
