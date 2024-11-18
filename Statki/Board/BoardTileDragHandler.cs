@@ -27,6 +27,8 @@ namespace Statki.Board
             {
                 _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
+
+                
                 Console.WriteLine("Działa to: " + _heldShip.Name);
             }
         }
@@ -35,6 +37,11 @@ namespace Statki.Board
         {
             e.Effects = DragDropEffects.Move;
             e.Handled = true;
+            if (_heldShip != null && sender is BoardTile currentTile)
+            {
+                HighlightTiles(currentTile, _heldShip, Brushes.LightGreen, true);
+            }
+
         }
 
         public void BoardTile_DragLeave(object sender, DragEventArgs e)
@@ -50,11 +57,14 @@ namespace Statki.Board
         {
             if (e.Data.GetData(typeof(Ship)) is Ship ship && sender is BoardTile tile)
             {
+                List<BoardTile> previousTiles = new List<BoardTile>(ship.OccupiedTiles);
+                ship.PreviousOccupiedTiles = previousTiles;
                 // Jeśli statek jest już umieszczony, wyczyść poprzednie pola
                 if (ship.IsPlaced)
                 {
                     ClearPreviousTiles(ship);
                 }
+
 
                 // Ustawienia dla nowej pozycji
                 int startRow = Grid.GetRow(tile);
@@ -67,6 +77,7 @@ namespace Statki.Board
                 {
                     MessageBox.Show("Statek nie zmieści się na planszy!");
                     ClearAllHighlights(); // Resetowanie wszystkich podświetleń
+                    RestorePreviousPosition(ship);
                     return;
                 }
 
@@ -75,6 +86,7 @@ namespace Statki.Board
                 {
                     MessageBox.Show("Nie możesz umieścić statku tutaj!");
                     ClearAllHighlights(); // Resetowanie wszystkich podświetleń
+                    RestorePreviousPosition(ship);
                     return;
                 }
 
@@ -112,6 +124,8 @@ namespace Statki.Board
         public void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
         {
             if (startTile == null) return;
+
+            ClearAllHighlights();
 
             int startRow = Grid.GetRow(startTile);
             int startCol = Grid.GetColumn(startTile);
@@ -168,12 +182,33 @@ namespace Statki.Board
                     {
                         return false;
                     }
-                }
+
+                    for (int x = -1; x <= 1; x++)
+                    {
+                        for (int y = -1; y <= 1; y++)
+                        {
+                            // Pomijamy sprawdzanie samego statku (obecnego pola)
+                            if (x == 0 && y == 0) continue;
+
+                            int checkRow = row + x;
+                            int checkCol = col + y;
+
+                            if (checkRow >= 1 && checkRow <= 10 && checkCol >= 1 && checkCol <= 10)
+                            {
+                                BoardTile adjacentTile = GetTileAtPosition(checkRow, checkCol);
+                                if (adjacentTile != null && adjacentTile.IsOccupied)
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                    }
             }
             return true;
         }
 
-        private void ClearPreviousTiles(Ship ship)
+        public void ClearPreviousTiles(Ship ship)
         {
             foreach (var tile in ship.OccupiedTiles)
             {
@@ -193,6 +228,21 @@ namespace Statki.Board
                 }
             }
             return null;
+        }
+
+        private void RestorePreviousPosition(Ship ship)
+        {
+            foreach (var tile in ship.PreviousOccupiedTiles)
+            {
+                if (tile != null)
+                {
+                    tile.IsOccupied = true;
+                    tile.ResetBackground(); // Przywróć tło poprzednich pól
+                }
+            }
+            ship.OccupiedTiles.Clear(); // Czyścimy listę aktualnych zajętych pól
+            ship.OccupiedTiles.AddRange(ship.PreviousOccupiedTiles);
+
         }
 
     }

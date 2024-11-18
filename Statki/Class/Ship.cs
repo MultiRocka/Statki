@@ -14,8 +14,9 @@ namespace Statki.Class
         public bool IsHorizontal { get; set; } = true;
         public bool IsPlaced { get; set; } = false;
 
-        // Lista przechowująca zajęte pola przez statek
         public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
+        public List<BoardTile> PreviousOccupiedTiles { get; set; } = new List<BoardTile>(); 
+        
 
         public Ship(string name, int length, int width)
         {
@@ -51,7 +52,7 @@ namespace Statki.Class
                             Width = 30,
                             Height = 30,
                             Background = Brushes.DarkGray,
-                            Margin = new Thickness(1)
+                            Margin = new Thickness(3)
                         };
                         rowPanel.Children.Add(segment);
                     }
@@ -105,6 +106,8 @@ namespace Statki.Class
                 }
             }
         }
+
+
 
         private BoardTile GetTileAtPosition(int row, int col, Grid gameGrid)
         {
