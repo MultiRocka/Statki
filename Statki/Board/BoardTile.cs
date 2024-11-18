@@ -81,6 +81,8 @@ namespace Statki.Board
         {
             if (HitStatus == HitStatus.None)
                 this.Background = DefaultBackground;
+            if (IsOccupied==true)
+                this.Background = Brushes.Blue;
         }
     }
 }

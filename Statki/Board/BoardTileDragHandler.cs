@@ -27,6 +27,8 @@ namespace Statki.Board
             {
                 _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
+
+                
                 Console.WriteLine("Działa to: " + _heldShip.Name);
             }
         }
@@ -55,7 +57,8 @@ namespace Statki.Board
         {
             if (e.Data.GetData(typeof(Ship)) is Ship ship && sender is BoardTile tile)
             {
-
+                List<BoardTile> previousTiles = new List<BoardTile>(ship.OccupiedTiles);
+                ship.PreviousOccupiedTiles = previousTiles;
                 // Jeśli statek jest już umieszczony, wyczyść poprzednie pola
                 if (ship.IsPlaced)
                 {
@@ -74,7 +77,7 @@ namespace Statki.Board
                 {
                     MessageBox.Show("Statek nie zmieści się na planszy!");
                     ClearAllHighlights(); // Resetowanie wszystkich podświetleń
-
+                    RestorePreviousPosition(ship);
                     return;
                 }
 
@@ -83,7 +86,7 @@ namespace Statki.Board
                 {
                     MessageBox.Show("Nie możesz umieścić statku tutaj!");
                     ClearAllHighlights(); // Resetowanie wszystkich podświetleń
-
+                    RestorePreviousPosition(ship);
                     return;
                 }
 
@@ -227,7 +230,20 @@ namespace Statki.Board
             return null;
         }
 
-       
+        private void RestorePreviousPosition(Ship ship)
+        {
+            foreach (var tile in ship.PreviousOccupiedTiles)
+            {
+                if (tile != null)
+                {
+                    tile.IsOccupied = true;
+                    tile.ResetBackground(); // Przywróć tło poprzednich pól
+                }
+            }
+            ship.OccupiedTiles.Clear(); // Czyścimy listę aktualnych zajętych pól
+            ship.OccupiedTiles.AddRange(ship.PreviousOccupiedTiles);
+
+        }
 
     }
 }
