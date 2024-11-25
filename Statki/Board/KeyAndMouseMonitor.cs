@@ -20,7 +20,7 @@ namespace Statki.Board
 
             keyCheckTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(100) // Częstotliwość sprawdzania klawiszy
+                Interval = TimeSpan.FromMilliseconds(125) // Częstotliwość sprawdzania klawiszy
             };
             keyCheckTimer.Tick += CheckKeyStates;
         }

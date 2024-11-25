@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Statki.Class;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -18,7 +19,7 @@ namespace Statki.Board
         public HitStatus HitStatus { get; private set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
-        public bool IsRestricted { get; set; } = false;
+
         public BoardTile()
         {
             this.Background = DefaultBackground;
@@ -29,19 +30,22 @@ namespace Statki.Board
 
         private void BoardTile_Click(object sender, RoutedEventArgs e)
         {
-            if (HitStatus != HitStatus.None) return; // Jeśli już kliknięte, wychodzimy
+            if (HitStatus != HitStatus.None)
+            {
+                Console.WriteLine($"Tile {this.Name} already clicked!");
+                return; // Jeśli pole było już kliknięte, kończymy
+            }
 
-            if (IsOccupied)
+            if (IsOccupied) // Trafiony statek
             {
                 HitStatus = HitStatus.Hit;
-                this.Background = Brushes.Red; // Trafienie w statek
+                this.Background = Brushes.Red;
                 Console.WriteLine($"Hit on {this.Name}");
-                // Możesz dodać logikę zniszczenia statku
             }
-            else
+            else // Nietrafiony
             {
                 HitStatus = HitStatus.Miss;
-                this.Background = Brushes.Gray; // Nietrafienie
+                this.Background = Brushes.Gray;
                 Console.WriteLine($"Miss on {this.Name}");
             }
         }

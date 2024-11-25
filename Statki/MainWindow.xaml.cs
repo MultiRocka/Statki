@@ -111,41 +111,18 @@ namespace Statki
 
         private void CreateShips()
         {
-            // Tworzymy statki
-            Ship testShip1 = new Ship("Test Ship 1", 3, 2);
-            StackPanel shipPanel1 = testShip1.CreateVisualRepresentation();
-            Ship testShip2 = new Ship("Test Ship 2", 4, 1);
-            StackPanel shipPanel2 = testShip2.CreateVisualRepresentation();
-
-            Ship testShip3 = new Ship("Test Ship 3", 2, 1);
-            StackPanel shipPanel3 = testShip3.CreateVisualRepresentation();
-
-            // Dodanie obsługi przeciągania statku
-            shipPanel1.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip1);
-            shipPanel1.MouseMove += shipDragHandler.ShipPanel_MouseMove;
-            shipPanel1.MouseUp += shipDragHandler.ShipPanel_MouseUp;
-
-            shipPanel2.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip2);
-            shipPanel2.MouseMove += shipDragHandler.ShipPanel_MouseMove;
-            shipPanel2.MouseUp += shipDragHandler.ShipPanel_MouseUp;
-
-            shipPanel3.MouseDown += (sender, e) => shipDragHandler.ShipPanel_MouseDown(sender, e, testShip2);
-            shipPanel3.MouseMove += shipDragHandler.ShipPanel_MouseMove;
-            shipPanel3.MouseUp += shipDragHandler.ShipPanel_MouseUp;
-
-            // Dodanie statków do listy
-            ships.Add(testShip1);
-            ships.Add(testShip2);
-
-            ships.Add(testShip3);
-
             // Znalezienie lewego panelu (pierwsza kolumna głównej siatki)
             StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
-            leftPanel.Children.Add(shipPanel1);
-            leftPanel.Children.Add(shipPanel2);
 
-            leftPanel.Children.Add(shipPanel3);
+            // Inicjalizator statków
+            ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, leftPanel);
+
+            // Tworzenie statków
+            initializer.CreateShip("Test Ship 1", 3, 2);
+            initializer.CreateShip("Test Ship 2", 4, 1);
+            initializer.CreateShip("Test Ship 3", 2, 1);
         }
+
 
 
         private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
