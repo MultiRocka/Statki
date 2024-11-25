@@ -128,5 +128,20 @@ namespace Statki.Class
             Width = temp;
         }
 
+        public bool IsSunk()
+        {
+            foreach (var tile in OccupiedTiles)
+            {
+                Console.WriteLine($"Checking tile {tile.Name}: HitStatus = {tile.HitStatus}");
+                if (tile.HitStatus != HitStatus.Hit)
+                {
+                    Console.WriteLine($"{Name}: Not sunk yet! Tile {tile.Name} is not hit.");
+                    return false; // Jeśli którykolwiek kafelek nie został trafiony, statek nie jest zatopiony
+                }
+            }
+            Console.WriteLine($"{Name} is sunk!");
+            return true; // Wszystkie kafelki zostały trafione, statek zatopiony
+        }
+
     }
 }

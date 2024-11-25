@@ -37,12 +37,23 @@ namespace Statki.Board
         {
             e.Effects = DragDropEffects.Move;
             e.Handled = true;
+
             if (_heldShip != null && sender is BoardTile currentTile)
             {
-                HighlightTiles(currentTile, _heldShip, Brushes.LightGreen, true);
-            }
+                int startRow = Grid.GetRow(currentTile);
+                int startCol = Grid.GetColumn(currentTile);
 
+                // Sprawdź, czy statek można postawić w tej lokalizacji
+                bool canPlace = CanPlaceShip(startRow, startCol, _heldShip);
+
+                // Ustaw kolor w zależności od możliwości postawienia statku
+                Brush highlightColor = canPlace ? Brushes.LightGreen : Brushes.IndianRed;
+
+                // Wywołaj podświetlenie z odpowiednim kolorem
+                HighlightTiles(currentTile, _heldShip, highlightColor, true);
+            }
         }
+
 
         public void BoardTile_DragLeave(object sender, DragEventArgs e)
         {
@@ -73,16 +84,7 @@ namespace Statki.Board
                 int endCol = ship.IsHorizontal ? startCol + ship.Length - 1 : startCol;
 
                 // Sprawdzenie, czy statek mieści się na planszy
-                if (endRow > 10 || endCol > 10)
-                {
-                    MessageBox.Show("Statek nie zmieści się na planszy!");
-                    ClearAllHighlights(); // Resetowanie wszystkich podświetleń
-                    RestorePreviousPosition(ship);
-                    return;
-                }
-
-                // Sprawdzenie, czy wszystkie pola są wolne
-                if (!CanPlaceShip(startRow, startCol, ship))
+                if (endRow > 10 || endCol > 10 || !CanPlaceShip(startRow, startCol, ship))
                 {
                     MessageBox.Show("Nie możesz umieścić statku tutaj!");
                     ClearAllHighlights(); // Resetowanie wszystkich podświetleń
