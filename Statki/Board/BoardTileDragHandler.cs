@@ -15,6 +15,8 @@ namespace Statki.Board
         private readonly Grid _gameGrid;
         private Ship _heldShip;
         private readonly KeyAndMouseMonitor _keyAndMouseMonitor;
+        private MainWindow _mainWindow;
+
         public BoardTileDragHandler(Grid gameGrid)
         {
             _gameGrid = gameGrid;
@@ -28,7 +30,7 @@ namespace Statki.Board
                 _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
 
-                
+
                 Console.WriteLine("Działa to: " + _heldShip.Name);
             }
         }
@@ -53,7 +55,6 @@ namespace Statki.Board
                 HighlightTiles(currentTile, _heldShip, highlightColor, true);
             }
         }
-
 
         public void BoardTile_DragLeave(object sender, DragEventArgs e)
         {
@@ -106,6 +107,7 @@ namespace Statki.Board
                         {
                             gridTile.Background = Brushes.Blue;
                             gridTile.IsOccupied = true;
+                            gridTile.AssignedShip = ship;
                             ship.OccupiedTiles.Add(gridTile);
                         }
                     }

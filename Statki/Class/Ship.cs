@@ -13,7 +13,7 @@ namespace Statki.Class
         public string Name { get; set; }
         public bool IsHorizontal { get; set; } = true;
         public bool IsPlaced { get; set; } = false;
-
+        public bool IsSunk { get; private set; } = false;
         public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
         public List<BoardTile> PreviousOccupiedTiles { get; set; } = new List<BoardTile>(); 
         
@@ -128,19 +128,9 @@ namespace Statki.Class
             Width = temp;
         }
 
-        public bool IsSunk()
+        public void CheckIfSunk()
         {
-            foreach (var tile in OccupiedTiles)
-            {
-                Console.WriteLine($"Checking tile {tile.Name}: HitStatus = {tile.HitStatus}");
-                if (tile.HitStatus != HitStatus.Hit)
-                {
-                    Console.WriteLine($"{Name}: Not sunk yet! Tile {tile.Name} is not hit.");
-                    return false; // Jeśli którykolwiek kafelek nie został trafiony, statek nie jest zatopiony
-                }
-            }
-            Console.WriteLine($"{Name} is sunk!");
-            return true; // Wszystkie kafelki zostały trafione, statek zatopiony
+            IsSunk = OccupiedTiles.All(tile => tile.HitStatus == HitStatus.Hit); // Zatopiony, jeśli wszystkie zajęte pola są trafione
         }
 
     }

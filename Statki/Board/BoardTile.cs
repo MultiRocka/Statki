@@ -20,12 +20,30 @@ namespace Statki.Board
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
 
+        public Ship AssignedShip { get; set; }
+
         public BoardTile()
         {
             this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
             this.MouseEnter += BoardTile_MouseEnter;
             this.MouseLeave += BoardTile_MouseLeave;
+        }
+
+        private void UpdateTileAppearance()
+        {
+            switch (HitStatus)
+            {
+                case HitStatus.None:
+                    this.Background = DefaultBackground;
+                    break;
+                case HitStatus.Miss:
+                    this.Background = Brushes.Gray;
+                    break;
+                case HitStatus.Hit:
+                    this.Background = Brushes.Red;
+                    break;
+            }
         }
 
         private void BoardTile_Click(object sender, RoutedEventArgs e)
@@ -39,13 +57,22 @@ namespace Statki.Board
             if (IsOccupied) // Trafiony statek
             {
                 HitStatus = HitStatus.Hit;
-                this.Background = Brushes.Red;
+                UpdateTileAppearance();
                 Console.WriteLine($"Hit on {this.Name}");
+
+                if (AssignedShip != null)
+                {
+                    AssignedShip.CheckIfSunk();
+                    if (AssignedShip.IsSunk)
+                    {
+                        Console.WriteLine($"Ship {AssignedShip.Name} is sunk!");
+                    }
+                }
             }
             else // Nietrafiony
             {
                 HitStatus = HitStatus.Miss;
-                this.Background = Brushes.Gray;
+                UpdateTileAppearance();
                 Console.WriteLine($"Miss on {this.Name}");
             }
         }
@@ -67,6 +94,8 @@ namespace Statki.Board
             }
         }
 
+        
+
         // Metoda resetująca stan pola
         public void Reset()
         {
@@ -85,7 +114,7 @@ namespace Statki.Board
         {
             if (HitStatus == HitStatus.None)
                 this.Background = DefaultBackground;
-            if (IsOccupied==true)
+            if (IsOccupied == true)
                 this.Background = Brushes.Blue;
         }
     }
