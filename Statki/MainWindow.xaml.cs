@@ -16,12 +16,22 @@ namespace Statki
         private List<Ship> ships = new List<Ship>(); // Lista wszystkich statków
         private KeyAndMouseMonitor shipDragHandler = new KeyAndMouseMonitor();
 
+
+
         public MainWindow()
         {
             InitializeComponent();
             CreateLayout();
             CreateShips(); // Tworzymy statki w lewym panelu
+            this.Width = 800;  
+            this.Height = 600;
+
+            this.MinWidth = 600;  // Minimalna szerokość okna
+            this.MinHeight = 500;
+
         }
+
+        public List<Ship> AllShipsList => ships;
 
         private void CreateLayout()
         {
@@ -121,9 +131,22 @@ namespace Statki
             initializer.CreateShip("Test Ship 1", 3, 2);
             initializer.CreateShip("Test Ship 2", 4, 1);
             initializer.CreateShip("Test Ship 3", 2, 1);
+            initializer.CreateShip("Test Ship 4", 3, 1);
+            initializer.CreateShip("Test Ship 3", 2, 1);
+            initializer.CreateShip("Test Ship 3", 2, 1);
+            initializer.CreateShip("Test Ship 3", 2, 1);
+
+            PrintAllShips();
         }
 
 
+        private void PrintAllShips()
+        {
+            foreach (var ship in ships)
+            {
+                Console.WriteLine($"Ship Name: {ship.Name}, Length: {ship.Length}, Width: {ship.Width}");
+            }
+        }
 
         private void OnGiveFeedback(object sender, GiveFeedbackEventArgs e)
         {
