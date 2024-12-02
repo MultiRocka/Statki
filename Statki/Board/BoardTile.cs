@@ -16,9 +16,15 @@ namespace Statki.Board
     public class BoardTile : Button
     {
         public bool IsOccupied { get; set; } = false;
-        public HitStatus HitStatus { get; private set; } = HitStatus.None;
+        public HitStatus HitStatus { get; set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
+
+        public int Row { get; set; } 
+        public int Column { get; set; }
+
+        public Ship AssignedShip { get; set; }
+
 
         public BoardTile()
         {
@@ -28,7 +34,7 @@ namespace Statki.Board
             this.MouseLeave += BoardTile_MouseLeave;
         }
 
-        public void BoardTile_Click(object sender, RoutedEventArgs e)
+        private void BoardTile_Click(object sender, RoutedEventArgs e)
         {
             if (HitStatus != HitStatus.None)
             {
@@ -39,13 +45,22 @@ namespace Statki.Board
             if (IsOccupied) // Trafiony statek
             {
                 HitStatus = HitStatus.Hit;
-                this.Background = Brushes.Red;
+                UpdateTileAppearance();
                 Console.WriteLine($"Hit on {this.Name}");
+
+                if (AssignedShip != null)
+                {
+                    AssignedShip.CheckIfSunk();
+                    if (AssignedShip.IsSunk)
+                    {
+                        Console.WriteLine($"Ship {AssignedShip.Name} is sunk!");
+                    }
+                }
             }
             else // Nietrafiony
             {
                 HitStatus = HitStatus.Miss;
-                this.Background = Brushes.Gray;
+                UpdateTileAppearance();
                 Console.WriteLine($"Miss on {this.Name}");
             }
         }
@@ -87,6 +102,30 @@ namespace Statki.Board
                 this.Background = DefaultBackground;
             if (IsOccupied==true)
                 this.Background = Brushes.Blue;
+        }
+
+        public void UpdateTileAppearance()
+        {
+            // Jeśli kafelek jest zajęty przez statek, ustawiamy niebieskie tło
+            if (IsOccupied)
+            {
+                this.Background = Brushes.Blue;
+            }
+            else
+            {
+                switch (HitStatus)
+                {
+                    case HitStatus.None:
+                        this.Background = DefaultBackground;
+                        break;
+                    case HitStatus.Miss:
+                        this.Background = Brushes.Gray;
+                        break;
+                    case HitStatus.Hit:
+                        this.Background = Brushes.Red;
+                        break;
+                }
+            }
         }
     }
 }

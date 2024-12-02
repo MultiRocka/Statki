@@ -170,7 +170,7 @@ namespace Statki.Board
         }
 
 
-        private bool CanPlaceShip(int startRow, int startCol, Ship ship)
+        public bool CanPlaceShip(int startRow, int startCol, Ship ship)
         {
             for (int i = 0; i < ship.Length; i++)
             {

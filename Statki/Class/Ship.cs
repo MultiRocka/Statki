@@ -14,6 +14,8 @@ namespace Statki.Class
         public bool IsHorizontal { get; set; } = true;
         public bool IsPlaced { get; set; } = false;
 
+        public bool IsSunk { get; private set; } = false;
+
         public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
         public List<BoardTile> PreviousOccupiedTiles { get; set; } = new List<BoardTile>(); 
         
@@ -128,7 +130,7 @@ namespace Statki.Class
             Width = temp;
         }
 
-        public bool IsSunk()
+        public bool CheckIfSunk()
         {
             foreach (var tile in OccupiedTiles)
             {
