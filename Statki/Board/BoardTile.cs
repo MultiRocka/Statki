@@ -28,7 +28,7 @@ namespace Statki.Board
             this.MouseLeave += BoardTile_MouseLeave;
         }
 
-        private void BoardTile_Click(object sender, RoutedEventArgs e)
+        public void BoardTile_Click(object sender, RoutedEventArgs e)
         {
             if (HitStatus != HitStatus.None)
             {
