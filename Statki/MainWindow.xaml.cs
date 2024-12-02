@@ -183,34 +183,9 @@ namespace Statki
             // Ukrywamy przycisk "Ready" po kliknięciu
             readyButton.Visibility = Visibility.Hidden;
 
-            // Rozpoczynamy timer na 3 sekundy
-            TimerForNextPhase(3); // Timer na 3 sekundy, który zacznie fazę układania statków
+            // Ustawiamy timer na 3 sekundy
+            turnManager.SetTimerTo3Seconds();
         }
-
-
-        private void TimerForNextPhase(int seconds)
-        {
-            // Ustawiamy timer na 3 sekundy, które trwają w fazie układania statków
-            DispatcherTimer phaseTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(1)
-            };
-
-            int remainingTime = seconds;
-            phaseTimer.Tick += (sender, e) =>
-            {
-                remainingTime--;
-                OnTimerUpdate?.Invoke(remainingTime); // Wyświetlamy timer w interfejsie
-                if (remainingTime <= 0)
-                {
-                    phaseTimer.Stop();
-                    turnManager.AutoPlaceShips(); // Wywołanie metody z TurnManager
-                    turnManager.StartTurnPhase(); // Rozpoczynamy turę
-                }
-            };
-            phaseTimer.Start();
-        }
-
 
     }
 

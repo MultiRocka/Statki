@@ -26,6 +26,10 @@ namespace Statki.Gameplay
         public event Action OnGameOver; // Zdarzenie końca gry
 
         private Button readyButton;
+
+        // Zmienna do trzymania pozostałego czasu
+        private int remainingTime;
+
         public TurnManager(Player player1, Player player2, Button readyButton)
         {
             Player1 = player1;
@@ -49,6 +53,8 @@ namespace Statki.Gameplay
         {
             _turnTimer.Start();
             _shipPlacementTimeRemaining = 30; // Czas układania statków to 30 sekund
+            remainingTime = _shipPlacementTimeRemaining;
+            OnTimerUpdate?.Invoke(remainingTime); // Wywołujemy zdarzenie na początek fazy
             readyButton.Visibility = Visibility.Visible; // Pokazujemy przycisk "Ready" na początku fazy układania
             Console.WriteLine("Placement Phase");
         }
@@ -60,16 +66,16 @@ namespace Statki.Gameplay
 
             if (_isPlacementPhase)
             {
-                if (_shipPlacementTimeRemaining > 0)
+                if (remainingTime > 0)
                 {
-                    _shipPlacementTimeRemaining--;
-                    OnTimerUpdate?.Invoke(_shipPlacementTimeRemaining);
+                    remainingTime--;
+                    OnTimerUpdate?.Invoke(remainingTime);
                 }
                 else
                 {
-                    AutoPlaceShips();
+                    AutoPlaceShips();  // Automatycznie rozkłada statki, jeśli czas minął
                     _isPlacementPhase = false;
-                    StartTurnPhase(); // Po rozłożeniu statków przechodzimy do fazy tur
+                    StartTurnPhase();  // Po rozłożeniu statków przechodzimy do fazy tur
                 }
             }
             else
@@ -86,37 +92,12 @@ namespace Statki.Gameplay
             }
         }
 
-
         public void AutoPlaceShips()
         {
-            // Sprawdzamy, czy wszystkie statki są poprawnie ustawione
-            if (!AreAllShipsPlaced())
-            {
-                MessageBox.Show("Wszystkie statki muszą być ustawione!");
-                return;
-            }
-
-            // Automatyczne losowanie pozycji dla statków, jeśli gracz nie rozłożył ich w czasie
             Player1.PlaceShipsRandomly();
             Player2.PlaceShipsRandomly();
-        }
 
-        private bool AreAllShipsPlaced()
-        {
-            foreach (var ship in Player1.Ships)
-            {
-                // Sprawdzamy, czy statek nie jest ustawiony na już zajętym polu
-                foreach (var tile in ship.OccupiedTiles)
-                {
-                    if (tile.IsOccupied)
-                    {
-                        return false; // Zwracamy false, jeśli jakieś pole jest już zajęte
-                    }
-                }
-            }
-            return true; // Zwracamy true, jeśli wszystkie statki są poprawnie ustawione
         }
-
 
         public void StartTurnPhase()
         {
@@ -140,7 +121,6 @@ namespace Statki.Gameplay
             // Aktualizujemy timer na wątku UI
             OnTimerUpdate?.Invoke(_turnTimeRemaining);
         }
-
 
         private bool ShootAtOpponent(Player shooter, Player target)
         {
@@ -173,7 +153,6 @@ namespace Statki.Gameplay
             return false; // Nietrafienie
         }
 
-
         private void CheckForWinner()
         {
             if (Player1.AllShipsSunk() || Player2.AllShipsSunk())
@@ -184,7 +163,11 @@ namespace Statki.Gameplay
             }
         }
 
-
-
+        // Metoda do ustawiania czasu na 3 sekundy po kliknięciu przycisku
+        public void SetTimerTo3Seconds()
+        {
+            remainingTime = 3;
+            OnTimerUpdate?.Invoke(remainingTime);
+        }
     }
 }
