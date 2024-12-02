@@ -11,7 +11,7 @@ namespace Statki.Gameplay
     {
         public string Name { get; set; }
         public List<Ship> Ships { get; private set; }
-        public int LastShotRow { get; set; } 
+        public int LastShotRow { get; set; }
         public int LastShotCol { get; set; }
         private Random _random;
 
@@ -21,7 +21,7 @@ namespace Statki.Gameplay
         public Player(string name, Grid board)
         {
             Name = name;
-            Board = Board;
+            Board = board;
             Ships = new List<Ship>();
             _random = new Random();
         }
@@ -36,88 +36,142 @@ namespace Statki.Gameplay
 
             foreach (var ship in Ships)
             {
-                bool placed = false;
-
-                while (!placed)
+                if (!ship.IsPlaced) // Sprawdzamy, czy statek już został ustawiony
                 {
-                    // Losowanie pozycji startowej
-                    int startRow = _random.Next(1, 11); // Zakładając planszę 10x10
-                    int startCol = _random.Next(1, 11);
+                    bool placed = false;
 
-                    // Losowanie orientacji (pozioma/pionowa)
-                    bool isHorizontal = _random.Next(2) == 0;
-
-                    // Sprawdzamy, czy statek zmieści się na planszy
-                    int endRow = isHorizontal ? startRow : startRow + ship.Width - 1;
-                    int endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
-
-                    // Jeśli statek nie zmieści się, próbujemy ponownie
-                    if (endRow > 10 || endCol > 10 || !CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
+                    while (!placed)
                     {
-                        isHorizontal = !isHorizontal; // Obracamy statek
-                        endRow = isHorizontal ? startRow : startRow + ship.Length - 1;
-                        endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
+                        // Losowanie pozycji startowej
+                        int startRow = _random.Next(1, 11); // Zakładając planszę 10x10
+                        int startCol = _random.Next(1, 11);
 
-                        // Jeśli po obrocie nadal nie pasuje, wracamy do początku
+                        // Losowanie orientacji (pozioma/pionowa)
+                        bool isHorizontal = _random.Next(2) == 0;
+
+                        // Sprawdzamy, czy statek zmieści się na planszy
+                        int endRow = isHorizontal ? startRow : startRow + ship.Width - 1;
+                        int endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
+
+                        // Jeśli statek nie zmieści się, próbujemy ponownie
                         if (endRow > 10 || endCol > 10 || !CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
                         {
-                            continue;
-                        }
-                    }
+                            isHorizontal = !isHorizontal; // Obracamy statek
+                            endRow = isHorizontal ? startRow : startRow + ship.Length - 1;
+                            endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
 
-                    // Jeśli statek zmieści się, umieszczamy go na planszy
-                    PlaceShipOnBoard(Board, startRow, startCol, ship, isHorizontal);
-                    placed = true;
+                            // Jeśli po obrocie nadal nie pasuje, wracamy do początku
+                            if (endRow > 10 || endCol > 10 || !CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
+                            {
+                                continue;
+                            }
+                        }
+
+                        // Jeśli statek zmieści się, umieszczamy go na planszy
+                        PlaceShipOnBoard(Board, startRow, startCol, ship, isHorizontal);
+                        ship.IsPlaced = true; // Oznaczamy, że statek został ustawiony
+                        placed = true;
+                    }
+                }
+            }
+        
+
+            // Po rozmieszczeniu wszystkich statków, zaktualizuj wygląd wszystkich kafelków
+            foreach (var child in Board.Children)
+            {
+                if (child is BoardTile tile && tile.IsOccupied)
+                {
+                    tile.UpdateTileAppearance(); // Aktualizujemy wygląd kafelka, jeśli jest zajęty
                 }
             }
         }
+
 
         // Pomocnicza funkcja do umieszczania statku na planszy
         private void PlaceShipOnBoard(Grid board, int startRow, int startCol, Ship ship, bool isHorizontal)
         {
             for (int i = 0; i < ship.Length; i++)
             {
-                int row = isHorizontal ? startRow : startRow + i;
-                int col = isHorizontal ? startCol + i : startCol;
-
-                // Znajdź kafelek na podstawie wiersza i kolumny
-                foreach (var child in board.Children)
+                for (int j = 0; j < ship.Width; j++)
                 {
-                    if (child is BoardTile tile && tile.Row == row && tile.Column == col)
+                    int row = isHorizontal ? startRow : startRow + i;
+                    int col = isHorizontal ? startCol + i : startCol + j;
+
+                    // Znajdź kafelek na podstawie wiersza i kolumny
+                    BoardTile tile = GetTileAtPosition(row, col, board);
+                    if (tile != null)
                     {
                         tile.IsOccupied = true;
-                        tile.OccupiedByShip = ship; // Zapisujemy, który statek zajmuje pole
-                        break;
+                        tile.AssignedShip = ship; // Zapisujemy, który statek zajmuje pole
+                        tile.UpdateTileAppearance(); // Zaktualizuj wygląd kafelka (np. ustaw kolor)
                     }
                 }
             }
         }
+
 
         private bool CanPlaceShip(Grid board, int startRow, int startCol, Ship ship, bool isHorizontal)
         {
             for (int i = 0; i < ship.Length; i++)
             {
-                int row = isHorizontal ? startRow : startRow + i;
-                int col = isHorizontal ? startCol + i : startCol;
-
-                // Sprawdzamy, czy w danym miejscu nie ma statku lub nie wykracza poza planszę
-                foreach (var child in board.Children)
+                for (int j = 0; j < ship.Width; j++)
                 {
-                    if (child is BoardTile tile && tile.Row == row && tile.Column == col)
+                    int row = isHorizontal ? startRow : startRow + i;
+                    int col = isHorizontal ? startCol + i : startCol + j;
+
+                    // Sprawdzamy, czy w danym miejscu nie ma statku lub nie wykracza poza planszę
+                    BoardTile gridTile = GetTileAtPosition(row, col, board); // Funkcja GetTileAtPosition musi zostać zaimplementowana
+                    if (gridTile == null || gridTile.IsOccupied)
                     {
-                        if (tile.IsOccupied) return false;
+                        return false;
+                    }
+
+                    // Sprawdzamy sąsiednie kafelki
+                    for (int x = -1; x <= 1; x++)
+                    {
+                        for (int y = -1; y <= 1; y++)
+                        {
+                            // Pomijamy sprawdzanie samego statku (obecnego pola)
+                            if (x == 0 && y == 0) continue;
+
+                            int checkRow = row + x;
+                            int checkCol = col + y;
+
+                            if (checkRow >= 1 && checkRow <= 10 && checkCol >= 1 && checkCol <= 10)
+                            {
+                                BoardTile adjacentTile = GetTileAtPosition(checkRow, checkCol, board);
+                                if (adjacentTile != null && adjacentTile.IsOccupied)
+                                {
+                                    return false; // Jeżeli którykolwiek sąsiedni kafelek jest zajęty, nie możemy postawić statku
+                                }
+                            }
+                        }
                     }
                 }
             }
-            return true;
+            return true; // Jeżeli wszystkie sprawdzenia przeszły pomyślnie, możemy postawić statek
         }
+
+        private BoardTile GetTileAtPosition(int row, int col, Grid board)
+        {
+            foreach (var child in board.Children)
+            {
+                if (child is BoardTile tile && tile.Row == row && tile.Column == col)
+                {
+                    return tile;
+                }
+            }
+            return null; // Jeśli nie znaleziono kafelka na danej pozycji
+        }
+
+
 
         public bool AllShipsSunk()
         {
             // Sprawdzanie, czy wszystkie statki gracza zostały zatopione
             foreach (var ship in Ships)
             {
-                if (!ship.IsSunk())
+                if (!ship.CheckIfSunk())
                     return false;
             }
             return true;
@@ -136,5 +190,19 @@ namespace Statki.Gameplay
             }
             return null; // Jeśli nie znaleziono statku w tej pozycji
         }
+
+         public bool AllShipsPlaced()
+          {
+                foreach (var ship in Ships)
+                {
+                    if (ship.OccupiedTiles == null || ship.OccupiedTiles.Count == 0)
+                    {
+                        // Jeśli któryś statek nie ma przypisanych pól, oznacza to, że nie jest rozstawiony
+                        return false;
+                    }
+                }
+                return true; // Wszystkie statki mają przypisane zajęte pola
+          }
+
     }
 }

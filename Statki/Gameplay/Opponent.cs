@@ -51,15 +51,15 @@ namespace Statki.Gameplay
                 if (child is BoardTile tile && tile.Row == row && tile.Column == col)
                 {
                     // Jeśli pole jest zajęte przez statek
-                    if (tile.OccupiedByShip != null)
+                    if (tile.AssignedShip != null)
                     {
                         tile.HitStatus = HitStatus.Hit; // Jeśli trafiono
                         tile.Background = Brushes.Red; // Zmiana koloru na czerwony (trafienie)
 
                         // Sprawdzenie, czy statek jest zatopiony
-                        if (tile.OccupiedByShip.IsSunk())
+                        if (tile.AssignedShip.CheckIfSunk())
                         {
-                            Console.WriteLine($"Statek przeciwnika {tile.OccupiedByShip.Name} został zatopiony!");
+                            Console.WriteLine($"Statek przeciwnika {tile.AssignedShip.Name} został zatopiony!");
                         }
                     }
                     else

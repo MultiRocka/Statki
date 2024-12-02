@@ -5,13 +5,16 @@ using Statki.Class;
 using Statki.Board;
 using System.Numerics;
 using System.Windows.Controls;
+using System.Windows;
 
 namespace Statki.Gameplay
 {
     public class TurnManager
     {
         private Random _random = new Random();
-        private Player _player1, _player2;
+        public Player Player1 { get; private set; }
+        public Player Player2 { get; private set; }
+
         private bool _isPlayerTurn = true; // Czy tura należy do gracza (true - gracz, false - przeciwnik)
         private DispatcherTimer _turnTimer;
         private int _turnTimeRemaining = 20; // 20 sekund na turę
@@ -19,12 +22,15 @@ namespace Statki.Gameplay
         private bool _isPlacementPhase = true;
         private bool _isGameOver = false;
 
+        public event Action<int> OnTimerUpdate;
         public event Action OnGameOver; // Zdarzenie końca gry
 
-        public TurnManager(Player player1, Player player2)
+        private Button readyButton;
+        public TurnManager(Player player1, Player player2, Button readyButton)
         {
-            _player1 = player1;
-            _player2 = player2;
+            Player1 = player1;
+            Player2 = player2;
+            this.readyButton = readyButton;
 
             _turnTimer = new DispatcherTimer
             {
@@ -39,10 +45,12 @@ namespace Statki.Gameplay
             StartPlacementPhase();
         }
 
-        private void StartPlacementPhase()
+        public void StartPlacementPhase()
         {
             _turnTimer.Start();
-            _shipPlacementTimeRemaining = 30;
+            _shipPlacementTimeRemaining = 30; // Czas układania statków to 30 sekund
+            readyButton.Visibility = Visibility.Visible; // Pokazujemy przycisk "Ready" na początku fazy układania
+            Console.WriteLine("Placement Phase");
         }
 
         private void TurnTimer_Tick(object sender, EventArgs e)
@@ -52,26 +60,24 @@ namespace Statki.Gameplay
 
             if (_isPlacementPhase)
             {
-                // Rozkładanie statków - countdown
                 if (_shipPlacementTimeRemaining > 0)
                 {
                     _shipPlacementTimeRemaining--;
+                    OnTimerUpdate?.Invoke(_shipPlacementTimeRemaining);
                 }
                 else
                 {
-                    // Jeśli czas na rozłożenie statków minął, rozkładamy je losowo
                     AutoPlaceShips();
                     _isPlacementPhase = false;
-                    _turnTimer.Interval = TimeSpan.FromSeconds(1); // Zmieniamy interwał na 1 sekundy
-                    StartTurnPhase();
+                    StartTurnPhase(); // Po rozłożeniu statków przechodzimy do fazy tur
                 }
             }
             else
             {
-                // Tura gry - countdown
                 if (_turnTimeRemaining > 0)
                 {
                     _turnTimeRemaining--;
+                    OnTimerUpdate?.Invoke(_turnTimeRemaining);
                 }
                 else
                 {
@@ -80,56 +86,61 @@ namespace Statki.Gameplay
             }
         }
 
-        private void AutoPlaceShips()
+
+        public void AutoPlaceShips()
         {
+            // Sprawdzamy, czy wszystkie statki są poprawnie ustawione
+            if (!AreAllShipsPlaced())
+            {
+                MessageBox.Show("Wszystkie statki muszą być ustawione!");
+                return;
+            }
+
             // Automatyczne losowanie pozycji dla statków, jeśli gracz nie rozłożył ich w czasie
-            _player1.PlaceShipsRandomly();
-            _player2.PlaceShipsRandomly();
+            Player1.PlaceShipsRandomly();
+            Player2.PlaceShipsRandomly();
         }
 
-        private void StartTurnPhase()
+        private bool AreAllShipsPlaced()
         {
-            // Losowanie, kto zaczyna turę
-            _isPlayerTurn = _random.Next(2) == 0; // Losowanie między graczami
+            foreach (var ship in Player1.Ships)
+            {
+                // Sprawdzamy, czy statek nie jest ustawiony na już zajętym polu
+                foreach (var tile in ship.OccupiedTiles)
+                {
+                    if (tile.IsOccupied)
+                    {
+                        return false; // Zwracamy false, jeśli jakieś pole jest już zajęte
+                    }
+                }
+            }
+            return true; // Zwracamy true, jeśli wszystkie statki są poprawnie ustawione
+        }
 
-            // Rozpoczynamy turę
+
+        public void StartTurnPhase()
+        {
+            // Rozpoczynamy fazę tur
+            _isPlayerTurn = _random.Next(2) == 0; // Losowanie, kto zaczyna turę
             _turnTimeRemaining = 20; // Resetujemy czas na turę
             _turnTimer.Start();
         }
 
         private void SwitchTurn()
         {
-            if (_isPlayerTurn)
-            {
-                // Tura gracza - sprawdzamy, czy trafienie
-                // Wywołujemy funkcję odpowiedzialną za wykonanie strzału
-                if (ShootAtOpponent(_player1, _player2))
-                {
-                    // Jeśli trafiono, gracz strzela ponownie
-                    _turnTimeRemaining = 20;
-                }
-                else
-                {
-                    // Jeśli nie trafił, zmiana tury na przeciwnika
-                    _isPlayerTurn = false;
-                }
-            }
-            else
-            {
-                // Tura przeciwnika
-                if (ShootAtOpponent(_player2, _player1))
-                {
-                    _turnTimeRemaining = 20;
-                }
-                else
-                {
-                    _isPlayerTurn = true;
-                }
-            }
+            // Przełączamy turę
+            _isPlayerTurn = !_isPlayerTurn;
 
-            // Sprawdzamy, czy któryś gracz wygrał
+            // Sprawdzamy, czy gra się zakończyła
             CheckForWinner();
+
+            // Resetujemy czas tury
+            _turnTimeRemaining = 20;
+
+            // Aktualizujemy timer na wątku UI
+            OnTimerUpdate?.Invoke(_turnTimeRemaining);
         }
+
 
         private bool ShootAtOpponent(Player shooter, Player target)
         {
@@ -151,7 +162,7 @@ namespace Statki.Gameplay
                     tile.HitStatus = HitStatus.Hit;
 
                     // Sprawdź, czy statek jest zatopiony
-                    if (targetShip.IsSunk())
+                    if (targetShip.CheckIfSunk())
                     {
                         Console.WriteLine($"Ship {targetShip.Name} is sunk.");
                     }
@@ -165,12 +176,15 @@ namespace Statki.Gameplay
 
         private void CheckForWinner()
         {
-            if (_player1.AllShipsSunk() || _player2.AllShipsSunk())
+            if (Player1.AllShipsSunk() || Player2.AllShipsSunk())
             {
                 _isGameOver = true;
                 _turnTimer.Stop();
                 OnGameOver?.Invoke(); // Zdarzenie końca gry
             }
         }
+
+
+
     }
 }
