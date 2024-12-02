@@ -16,9 +16,15 @@ namespace Statki.Board
     public class BoardTile : Button
     {
         public bool IsOccupied { get; set; } = false;
-        public HitStatus HitStatus { get; private set; } = HitStatus.None;
+        public HitStatus HitStatus { get; set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
+
+        public int Row { get; set; } 
+        public int Column { get; set; }
+
+        public Ship OccupiedByShip { get; set; }
+
 
         public BoardTile()
         {
@@ -88,5 +94,7 @@ namespace Statki.Board
             if (IsOccupied==true)
                 this.Background = Brushes.Blue;
         }
+
+
     }
 }

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using Statki.Board;
 using Statki.Class;
+using Statki.Gameplay;
 
 namespace Statki
 {
@@ -16,6 +15,9 @@ namespace Statki
         private BoardTileDragHandler _dragHandler;
         private List<Ship> ships = new List<Ship>(); // Lista wszystkich statków
         private KeyAndMouseMonitor shipDragHandler = new KeyAndMouseMonitor();
+        private BoardGridCreator boardGridCreator;
+
+        private TurnManager turnManager;
 
         public MainWindow()
         {
@@ -27,6 +29,18 @@ namespace Statki
 
             MinHeight = 400;
             MinWidth = 1000;
+
+            Player player1 = new Player("Gracz 1", gameGrid); // Zmienione, aby przekazać planszę gracza
+            Player player2 = new Player("Gracz 2", opponentGrid); // Zmienione, aby przekazać planszę przeciwnika
+
+            // Inicjalizacja menedżera tur
+            turnManager = new TurnManager(player1, player2);
+
+            // Rejestracja zdarzenia końca gry
+            turnManager.OnGameOver += TurnManager_OnGameOver;
+
+            // Rozpoczęcie gry
+            turnManager.Start();
         }
 
         private void CreateLayout()
@@ -49,94 +63,19 @@ namespace Statki
             mainGrid.Children.Add(leftPanel);
 
             // Tworzenie planszy gracza
-            gameGrid = CreatePlayerBoard();
+            boardGridCreator = new BoardGridCreator();
+            gameGrid = boardGridCreator.CreateBoardGrid(isOpponent: false);
             Grid.SetColumn(gameGrid, 1);
             mainGrid.Children.Add(gameGrid);
 
             // Tworzenie planszy przeciwnika
-            opponentGrid = CreateOpponentBoard();
+            opponentGrid = boardGridCreator.CreateBoardGrid(isOpponent: true);
             Grid.SetColumn(opponentGrid, 2);
             opponentGrid.Margin = new Thickness(10, 0, 0, 0); // Dodanie odstępu od planszy gracza
             mainGrid.Children.Add(opponentGrid);
 
             // Ustawienie głównej zawartości okna
             this.Content = mainGrid;
-        }
-
-        private Grid CreatePlayerBoard()
-        {
-            return CreateBoardGrid(isOpponent: false); // Plansza gracza obsługuje przeciąganie statków
-        }
-
-        private Grid CreateOpponentBoard()
-        {
-            return CreateBoardGrid(isOpponent: true); // Plansza przeciwnika nie obsługuje przeciągania statków
-        }
-
-        private Grid CreateBoardGrid(bool isOpponent = false)
-        {
-            Grid boardGrid = new Grid
-            {
-                ShowGridLines = false
-            };
-
-            for (int i = 0; i < 11; i++)
-            {
-                boardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                boardGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            }
-
-            // Dodanie etykiet wierszy i kolumn
-            for (int i = 1; i <= 10; i++)
-            {
-                TextBlock colHeader = new TextBlock
-                {
-                    Text = ((char)(i + 64)).ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                Grid.SetRow(colHeader, 0);
-                Grid.SetColumn(colHeader, i);
-                boardGrid.Children.Add(colHeader);
-
-                TextBlock rowHeader = new TextBlock
-                {
-                    Text = i.ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                Grid.SetRow(rowHeader, i);
-                Grid.SetColumn(rowHeader, 0);
-                boardGrid.Children.Add(rowHeader);
-            }
-
-            _dragHandler = new BoardTileDragHandler(boardGrid);
-
-            // Dodanie pól planszy jako BoardTile
-            for (int row = 1; row <= 10; row++)
-            {
-                for (int col = 1; col <= 10; col++)
-                {
-                    BoardTile tile = new BoardTile
-                    {
-                        Name = $"{(char)(col + 64)}{row}",
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                        VerticalAlignment = VerticalAlignment.Stretch,
-                        AllowDrop = !isOpponent // Tylko plansza gracza obsługuje upuszczanie
-                    };
-
-                     tile.Drop += _dragHandler.BoardTile_Drop; // Obsługa upuszczania
-                     tile.DragEnter += _dragHandler.BoardTile_DragEnter;
-                     tile.DragOver += _dragHandler.BoardTile_DragOver;
-                     tile.DragLeave += _dragHandler.BoardTile_DragLeave;
-
-                    Grid.SetRow(tile, row);
-                    Grid.SetColumn(tile, col);
-                    boardGrid.Children.Add(tile);
-                }
-            }
-
-            return boardGrid;
         }
 
         private void CreateShips()
@@ -151,9 +90,14 @@ namespace Statki
             initializer.CreateShip("Test Ship 1", 3, 2);
             initializer.CreateShip("Test Ship 2", 4, 1);
             initializer.CreateShip("Test Ship 3", 2, 1);
+            initializer.CreateShip("Test Ship 4", 1, 1);
+            initializer.CreateShip("Test Ship 5", 5, 1);
+        }
 
-
+        private void TurnManager_OnGameOver()
+        {
+            MessageBox.Show("Gra zakończona!");
+            // Możesz dodać kod do pokazania wyniku lub restartu gry
         }
     }
-
 }
