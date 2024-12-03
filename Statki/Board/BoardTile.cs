@@ -1,8 +1,10 @@
 ﻿using Statki.Class;
+using Statki.Gameplay;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Statki.Board
 {
@@ -19,11 +21,10 @@ namespace Statki.Board
         public HitStatus HitStatus { get; set; } = HitStatus.None;
         public Brush DefaultBackground { get; set; } = Brushes.LightBlue;
         private Brush PreviousBackground { get; set; }
-
         public int Row { get; set; } 
         public int Column { get; set; }
-
         public Ship AssignedShip { get; set; }
+        public bool IsOpponent { get; set; }
 
 
         public BoardTile()
@@ -36,34 +37,15 @@ namespace Statki.Board
 
         private void BoardTile_Click(object sender, RoutedEventArgs e)
         {
-            if (HitStatus != HitStatus.None)
-            {
-                Console.WriteLine($"Tile {this.Name} already clicked!");
-                return; // Jeśli pole było już kliknięte, kończymy
-            }
+            var tile = sender as BoardTile;
 
-            if (IsOccupied) // Trafiony statek
+            if (tile != null)
             {
-                HitStatus = HitStatus.Hit;
-                UpdateTileAppearance();
-                Console.WriteLine($"Hit on {this.Name}");
-
-                if (AssignedShip != null)
-                {
-                    AssignedShip.CheckIfSunk();
-                    if (AssignedShip.IsSunk)
-                    {
-                        Console.WriteLine($"Ship {AssignedShip.Name} is sunk!");
-                    }
-                }
-            }
-            else // Nietrafiony
-            {
-                HitStatus = HitStatus.Miss;
-                UpdateTileAppearance();
-                Console.WriteLine($"Miss on {this.Name}");
+                var handler = new BoardTileClickHandler();
+                handler.HandleTileClick(tile);
             }
         }
+
 
         private void BoardTile_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
@@ -99,33 +81,43 @@ namespace Statki.Board
         public void ResetBackground()
         {
             if (HitStatus == HitStatus.None)
-                this.Background = DefaultBackground;
+                this.Background = Background;
             if (IsOccupied==true)
                 this.Background = Brushes.Blue;
         }
 
         public void UpdateTileAppearance()
         {
-            // Jeśli kafelek jest zajęty przez statek, ustawiamy niebieskie tło
-            if (IsOccupied)
+            // Jeśli kafelek jest zajęty przez statek i nie był jeszcze trafiony
+            if (IsOccupied && HitStatus == HitStatus.None && IsOpponent ==false)
             {
-                this.Background = Brushes.Blue;
+                this.Background = new ImageBrush(new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\ship.png")));
             }
             else
             {
-                switch (HitStatus)
+                // Jeśli statek jest zatopiony, ustaw kolor na czarny
+                if (AssignedShip != null && AssignedShip.IsSunk)
                 {
-                    case HitStatus.None:
-                        this.Background = DefaultBackground;
-                        break;
-                    case HitStatus.Miss:
-                        this.Background = Brushes.Gray;
-                        break;
-                    case HitStatus.Hit:
-                        this.Background = Brushes.Red;
-                        break;
+                    this.Background = Brushes.Black;
+                }
+                else
+                {
+                    // Ustaw tło na podstawie statusu trafienia
+                    switch (HitStatus)
+                    {
+                        case HitStatus.None:
+                            this.Background = Background;
+                            break;
+                        case HitStatus.Miss:
+                            this.Background = Brushes.Gray;
+                            break;
+                        case HitStatus.Hit:
+                            this.Background = Brushes.Red;
+                            break;
+                    }
                 }
             }
         }
+
     }
 }

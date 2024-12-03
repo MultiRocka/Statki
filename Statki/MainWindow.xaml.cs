@@ -1,11 +1,10 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Threading;
-using Statki.Board;
+﻿using Statki.Board;
 using Statki.Class;
 using Statki.Gameplay;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Statki
 {
@@ -31,7 +30,7 @@ namespace Statki
             InitializeComponent();
             CreateLayout();
             CreateShips(); // Tworzymy statki w lewym panelu
-            Width = 1200;
+            Width = 1300;
             Height = 600;
 
             MinHeight = 400;
@@ -45,8 +44,6 @@ namespace Statki
             turnManager.OnTimerUpdate += UpdateTimerText;
 
             AssignShipsToPlayers();
-
-            // Rozpoczęcie gry
             turnManager.Start();
         }
 
@@ -54,9 +51,15 @@ namespace Statki
         {
             // Tworzenie głównej siatki
             Grid mainGrid = new Grid();
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(250) }); // Lewa kolumna na statki
+
+            // Dodanie wiersza na napisy
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) }); // Wiersz na napisy
+
+            // Dodanie wierszy na plansze i inne elementy
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) }); // Plansza gracza i przeciwnika
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) }); // Lewa kolumna na statki
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Plansza gracza
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) }); //kolumna na timer
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) }); // Kolumna na timer
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Plansza przeciwnika
 
             // Tworzenie panelu dla statków po lewej stronie
@@ -65,17 +68,63 @@ namespace Statki
                 Orientation = Orientation.Vertical,
                 Width = 200,
                 Background = Brushes.LightGray,
-                Margin = new Thickness(10)
             };
             Grid.SetColumn(leftPanel, 0);
+            Grid.SetRow(leftPanel, 1); // Ustawiamy panel w drugim wierszu
             mainGrid.Children.Add(leftPanel);
 
             // Tworzenie planszy gracza
             boardGridCreator = new BoardGridCreator();
             gameGrid = boardGridCreator.CreateBoardGrid(isOpponent: false);
             Grid.SetColumn(gameGrid, 1);
+            Grid.SetRow(gameGrid, 1); // Plansza gracza w drugim wierszu
             mainGrid.Children.Add(gameGrid);
 
+            // Tworzenie napisu "Your Board" nad planszą gracza
+            TextBlock yourBoardText = new TextBlock
+            {
+                Text = "Your Board",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5)
+            };
+            StackPanel yourBoardPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            yourBoardPanel.Children.Add(yourBoardText);
+            Grid.SetColumn(yourBoardPanel, 1);
+            Grid.SetRow(yourBoardPanel, 0); // Ustawiamy wiersz z napisem nad planszą
+            mainGrid.Children.Add(yourBoardPanel);
+
+            // Tworzenie napisu "Opponent Board" nad planszą przeciwnika
+            TextBlock opponentBoardText = new TextBlock
+            {
+                Text = "Opponent Board",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5)
+            };
+            StackPanel opponentBoardPanel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            opponentBoardPanel.Children.Add(opponentBoardText);
+            Grid.SetColumn(opponentBoardPanel, 3);
+            Grid.SetRow(opponentBoardPanel, 0); // Ustawiamy wiersz z napisem nad planszą
+            mainGrid.Children.Add(opponentBoardPanel);
+
+            // Tworzenie planszy przeciwnika
+            opponentGrid = boardGridCreator.CreateBoardGrid(isOpponent: true);
+            Grid.SetColumn(opponentGrid, 3);
+            Grid.SetRow(opponentGrid, 1); // Plansza przeciwnika w drugim wierszu
+            mainGrid.Children.Add(opponentGrid);
+
+            // Tworzenie panelu timera
             StackPanel timerPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
@@ -89,28 +138,25 @@ namespace Statki
             };
             timerPanel.Children.Add(timerTextBlock);
             Grid.SetColumn(timerPanel, 2);
+            Grid.SetRow(timerPanel, 1); // Timer w drugim wierszu
             mainGrid.Children.Add(timerPanel);
 
             // Przypisanie do zmiennej członkowskiej
             readyButton = new Button
             {
                 Content = "Ready",
-                Visibility = Visibility.Hidden,
+                Visibility = Visibility.Visible,
                 Width = 100,
                 Height = 50,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
             readyButton.Click += ReadyButton_Click;
-            timerPanel.Children.Add(readyButton); // Dodanie przycisku do panelu
-
-            // Tworzenie planszy przeciwnika
-            opponentGrid = boardGridCreator.CreateBoardGrid(isOpponent: true);
-            Grid.SetColumn(opponentGrid, 3);
-            mainGrid.Children.Add(opponentGrid);
+            timerPanel.Children.Add(readyButton);
 
             // Ustawienie głównej zawartości okna
             this.Content = mainGrid;
         }
+
 
         private void CreateShips()
         {
@@ -142,12 +188,34 @@ namespace Statki
                 var opponentShip = new Ship(ship.Name + " (Opponent)", ship.Length, ship.Width);
                 turnManager.Player2.Ships.Add(opponentShip);
             }
+
+            // Wypisanie stanu statków gracza 1
+            Console.WriteLine("Statki gracza 1:");
+            foreach (var ship in turnManager.Player1.Ships)
+            {
+                ship.PrintState();
+            }
+
+            // Wypisanie stanu statków przeciwnika
+            Console.WriteLine("Statki przeciwnika:");
+            foreach (var ship in turnManager.Player2.Ships)
+            {
+                ship.PrintState();
+            }
         }
+
 
         private void TurnManager_OnGameOver()
         {
             MessageBox.Show("Gra zakończona!");
             // Możesz dodać kod do pokazania wyniku lub restartu gry
+
+            Console.WriteLine("Statki przeciwnika:");
+            foreach (var ship in turnManager.Player2.Ships)
+            {
+                ship.PrintState();
+            }
+
         }
 
         private void UpdateTimerText(int remainingTime)
@@ -160,11 +228,14 @@ namespace Statki
                 if (remainingTime <= 3)
                 {
                     readyButton.Visibility = Visibility.Hidden;
+
+                    StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+                    leftPanel.Visibility = Visibility.Collapsed;
+
+                    Grid mainGrid = (Grid)this.Content;
+                    mainGrid.ColumnDefinitions[0].Width = new GridLength(0); // Pierwsza kolumna - lewy panel
                 }
-                else
-                {
-                    readyButton.Visibility = Visibility.Visible;
-                }
+
 
                 if (remainingTime <= 5)
                 {
@@ -180,12 +251,22 @@ namespace Statki
 
         private void ReadyButton_Click(object sender, RoutedEventArgs e)
         {
-            // Ukrywamy przycisk "Ready" po kliknięciu
+            // Ukrywamy przycisk "Ready"
             readyButton.Visibility = Visibility.Hidden;
+
+            // Ukrywamy lewy panel (po kliknięciu "Ready")
+            StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+            leftPanel.Visibility = Visibility.Hidden;
+
+            // Zmieniamy szerokość kolumny na 0, aby przestrzeń po lewym panelu zniknęła
+            Grid mainGrid = (Grid)this.Content;
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(0); // Pierwsza kolumna - lewy panel
+
 
             // Ustawiamy timer na 3 sekundy
             turnManager.SetTimerTo3Seconds();
         }
+
 
     }
 

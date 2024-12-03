@@ -15,12 +15,16 @@ namespace Statki.Gameplay
         public Player Player1 { get; private set; }
         public Player Player2 { get; private set; }
 
-        private bool _isPlayerTurn = true; // Czy tura należy do gracza (true - gracz, false - przeciwnik)
+        public bool _isPlayerTurn = true; // Czy tura należy do gracza (true - gracz, false - przeciwnik)
         private DispatcherTimer _turnTimer;
         private int _turnTimeRemaining = 20; // 20 sekund na turę
         private int _shipPlacementTimeRemaining = 30; // 30 sekund na rozłożenie statków
-        private bool _isPlacementPhase = true;
+
+        private bool _isPlacementPhase = false;
         private bool _isGameOver = false;
+
+        private int _player1Turns = 0;
+        private int _player2Turns = 0;
 
         public event Action<int> OnTimerUpdate;
         public event Action OnGameOver; // Zdarzenie końca gry
@@ -30,8 +34,12 @@ namespace Statki.Gameplay
         // Zmienna do trzymania pozostałego czasu
         private int remainingTime;
 
+        public bool _hasShotThisTurn = false;
+        public static TurnManager Instance { get; private set; }
+
         public TurnManager(Player player1, Player player2, Button readyButton)
         {
+            Instance = this;
             Player1 = player1;
             Player2 = player2;
             this.readyButton = readyButton;
@@ -52,12 +60,13 @@ namespace Statki.Gameplay
         public void StartPlacementPhase()
         {
             _turnTimer.Start();
-            _shipPlacementTimeRemaining = 30; // Czas układania statków to 30 sekund
+            _shipPlacementTimeRemaining = 30;
             remainingTime = _shipPlacementTimeRemaining;
-            OnTimerUpdate?.Invoke(remainingTime); // Wywołujemy zdarzenie na początek fazy
-            readyButton.Visibility = Visibility.Visible; // Pokazujemy przycisk "Ready" na początku fazy układania
-            Console.WriteLine("Placement Phase");
+            OnTimerUpdate?.Invoke(remainingTime);
+            Console.WriteLine("Placement Phase Started");
+            _isPlacementPhase = true;  // Upewnij się, że faza rozmieszczania jest ustawiona na true
         }
+
 
         private void TurnTimer_Tick(object sender, EventArgs e)
         {
@@ -71,12 +80,15 @@ namespace Statki.Gameplay
                     remainingTime--;
                     OnTimerUpdate?.Invoke(remainingTime);
                 }
-                else
+
+                if (_isPlacementPhase && remainingTime <= 0)
                 {
-                    AutoPlaceShips();  // Automatycznie rozkłada statki, jeśli czas minął
+                    AutoPlaceShips();  // Automatyczne rozmieszczenie statków
                     _isPlacementPhase = false;
-                    StartTurnPhase();  // Po rozłożeniu statków przechodzimy do fazy tur
+                    Console.WriteLine("Placement Phase ended.");
+                    StartTurnPhase();  // Przechodzimy do fazy tur
                 }
+
             }
             else
             {
@@ -87,10 +99,11 @@ namespace Statki.Gameplay
                 }
                 else
                 {
-                    SwitchTurn();
+                    SwitchTurn();  // Zmieniamy turę po upływie czasu
                 }
             }
         }
+
 
         public void AutoPlaceShips()
         {
@@ -103,55 +116,41 @@ namespace Statki.Gameplay
         {
             // Rozpoczynamy fazę tur
             _isPlayerTurn = _random.Next(2) == 0; // Losowanie, kto zaczyna turę
+            Console.WriteLine(_isPlayerTurn ? "Player 1 starts!" : "Player 2 starts!");
             _turnTimeRemaining = 20; // Resetujemy czas na turę
             _turnTimer.Start();
         }
 
-        private void SwitchTurn()
+
+        public void SwitchTurn()
         {
-            // Przełączamy turę
+            // Zmieniamy turę
+            Console.WriteLine($"Switching turn: {_isPlayerTurn}");
+
+            // Zmieniamy, kto ma teraz tura
+            if (_isPlayerTurn)
+            {
+                _player1Turns++;
+            }
+            else
+            {
+                _player2Turns++;
+            }
+
+            // Resetujemy flagę strzału
+            _hasShotThisTurn = false;
+
+            // Zmieniamy tura
             _isPlayerTurn = !_isPlayerTurn;
+            Console.WriteLine($"It's now {_isPlayerTurn} turn.");
 
-            // Sprawdzamy, czy gra się zakończyła
+            // Sprawdzamy zwycięzcę
             CheckForWinner();
-
-            // Resetujemy czas tury
             _turnTimeRemaining = 20;
-
-            // Aktualizujemy timer na wątku UI
             OnTimerUpdate?.Invoke(_turnTimeRemaining);
         }
 
-        private bool ShootAtOpponent(Player shooter, Player target)
-        {
-            // Znajdź statek w miejscu strzału
-            var targetShip = target.GetShipAtPosition(shooter.LastShotRow, shooter.LastShotCol);
-            if (targetShip != null)
-            {
-                // Znajdź zajmowany kafelek w miejscu strzału
-                var tile = targetShip.OccupiedTiles.Find(t => t.Row == shooter.LastShotRow && t.Column == shooter.LastShotCol);
-                if (tile != null)
-                {
-                    if (tile.HitStatus == HitStatus.Hit)
-                    {
-                        // Pole już trafione
-                        return false;
-                    }
-
-                    // Oznacz pole jako trafione
-                    tile.HitStatus = HitStatus.Hit;
-
-                    // Sprawdź, czy statek jest zatopiony
-                    if (targetShip.CheckIfSunk())
-                    {
-                        Console.WriteLine($"Ship {targetShip.Name} is sunk.");
-                    }
-
-                    return true; // Trafienie
-                }
-            }
-            return false; // Nietrafienie
-        }
+        
 
         private void CheckForWinner()
         {
@@ -159,7 +158,13 @@ namespace Statki.Gameplay
             {
                 _isGameOver = true;
                 _turnTimer.Stop();
-                OnGameOver?.Invoke(); // Zdarzenie końca gry
+                OnGameOver?.Invoke();
+
+                Console.WriteLine("Game Over!");
+                Console.WriteLine($"Player 1 turns: {_player1Turns}");
+                Console.WriteLine($"Player 2 turns: {_player2Turns}");
+                Console.WriteLine($"Total turns: {_player1Turns + _player2Turns}");
+
             }
         }
 
@@ -169,5 +174,17 @@ namespace Statki.Gameplay
             remainingTime = 3;
             OnTimerUpdate?.Invoke(remainingTime);
         }
+
+        public void CheckPhase()
+        {
+            Console.WriteLine($"Current phase: {(_isPlacementPhase ? "Placement" : "Turn")}");
+        }
+
+        public void EndTurn()
+        {
+            _hasShotThisTurn = false; // Resetujemy flagę
+            SwitchTurn(); // Zmieniamy turę
+        }
     }
 }
+

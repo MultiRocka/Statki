@@ -17,13 +17,23 @@ namespace Statki.Gameplay
 
         private BoardTileDragHandler _dragHandler;
         public Grid Board { get; private set; }
-
+        public List<BoardTile> BoardTiles { get; private set; }
         public Player(string name, Grid board)
         {
             Name = name;
             Board = board;
             Ships = new List<Ship>();
             _random = new Random();
+
+            BoardTiles = new List<BoardTile>();
+
+            foreach (var child in Board.Children)
+            {
+                if (child is BoardTile tile)
+                {
+                    BoardTiles.Add(tile);  // Dodajemy kafelki do listy
+                }
+            }
         }
 
         public void PlaceShipsRandomly()
@@ -49,29 +59,32 @@ namespace Statki.Gameplay
                         // Losowanie orientacji (pozioma/pionowa)
                         bool isHorizontal = _random.Next(2) == 0;
 
-                        // Sprawdzamy, czy statek zmieści się na planszy
-                        int endRow = isHorizontal ? startRow : startRow + ship.Width - 1;
+                        // Oblicz końcowe współrzędne
+                        int endRow = isHorizontal ? startRow : startRow + ship.Length - 1;
                         int endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
 
-                        // Jeśli statek nie zmieści się, próbujemy ponownie
-                        if (endRow > 10 || endCol > 10 || !CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
+                        if (endRow <= 10 && endCol <= 10 && CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
                         {
-                            isHorizontal = !isHorizontal; // Obracamy statek
+                            PlaceShipOnBoard(Board, startRow, startCol, ship, isHorizontal);
+                            ship.IsPlaced = true;
+                            placed = true;
+                        }
+                        else
+                        {
+                            // Obracanie w przypadku niepowodzenia
+                            isHorizontal = !isHorizontal;
                             endRow = isHorizontal ? startRow : startRow + ship.Length - 1;
                             endCol = isHorizontal ? startCol + ship.Length - 1 : startCol;
 
-                            // Jeśli po obrocie nadal nie pasuje, wracamy do początku
-                            if (endRow > 10 || endCol > 10 || !CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
+                            if (endRow <= 10 && endCol <= 10 && CanPlaceShip(Board, startRow, startCol, ship, isHorizontal))
                             {
-                                continue;
+                                PlaceShipOnBoard(Board, startRow, startCol, ship, isHorizontal);
+                                ship.IsPlaced = true;
+                                placed = true;
                             }
                         }
-
-                        // Jeśli statek zmieści się, umieszczamy go na planszy
-                        PlaceShipOnBoard(Board, startRow, startCol, ship, isHorizontal);
-                        ship.IsPlaced = true; // Oznaczamy, że statek został ustawiony
-                        placed = true;
                     }
+
                 }
             }
         
@@ -90,24 +103,27 @@ namespace Statki.Gameplay
         // Pomocnicza funkcja do umieszczania statku na planszy
         private void PlaceShipOnBoard(Grid board, int startRow, int startCol, Ship ship, bool isHorizontal)
         {
+            ship.OccupiedTiles.Clear(); // Wyczyszczenie poprzednich zajętych płytek
+
             for (int i = 0; i < ship.Length; i++)
             {
                 for (int j = 0; j < ship.Width; j++)
                 {
-                    int row = isHorizontal ? startRow : startRow + i;
+                    int row = isHorizontal ? startRow + j : startRow + i;
                     int col = isHorizontal ? startCol + i : startCol + j;
 
-                    // Znajdź kafelek na podstawie wiersza i kolumny
                     BoardTile tile = GetTileAtPosition(row, col, board);
                     if (tile != null)
                     {
                         tile.IsOccupied = true;
-                        tile.AssignedShip = ship; // Zapisujemy, który statek zajmuje pole
-                        tile.UpdateTileAppearance(); // Zaktualizuj wygląd kafelka (np. ustaw kolor)
+                        tile.AssignedShip = ship;
+                        ship.OccupiedTiles.Add(tile); // Dodaj do listy zajętych kafelków
+                        tile.UpdateTileAppearance();
                     }
                 }
             }
         }
+
 
 
         private bool CanPlaceShip(Grid board, int startRow, int startCol, Ship ship, bool isHorizontal)

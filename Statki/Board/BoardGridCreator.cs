@@ -1,6 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Statki.Board;
 using Statki.Class;
 
@@ -50,6 +51,8 @@ namespace Statki.Board
 
             _dragHandler = new BoardTileDragHandler(boardGrid);
 
+            BitmapImage waterGif = new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\water.png"));
+
             // Dodanie pól planszy jako BoardTile
             for (int row = 1; row <= 10; row++)
             {
@@ -63,9 +66,11 @@ namespace Statki.Board
                         AllowDrop = !isOpponent, // Tylko plansza gracza obsługuje upuszczanie
 
                         Row = row, // Przypisanie wiersza
-                        Column = col // Przypisanie kolumny
+                        Column = col, // Przypisanie kolumny
+                        IsOpponent = isOpponent // Ustawiamy IsOpponent
                     };
 
+                    tile.SetBackgroundImage(waterGif);
                     // Zdarzenia przeciągania
                     tile.Drop += _dragHandler.BoardTile_Drop;
                     tile.DragEnter += _dragHandler.BoardTile_DragEnter;
