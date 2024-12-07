@@ -29,7 +29,7 @@ namespace Statki.Board
             }
 
             var turnManager = TurnManager.Instance;
-            if (turnManager == null || turnManager.Player1 == null || turnManager.Player2 == null)
+            if (turnManager == null || turnManager.Player1 == null || turnManager.Oponnent == null)
             {
                 Console.WriteLine("TurnManager is not initialized or players are null!");
                 return;

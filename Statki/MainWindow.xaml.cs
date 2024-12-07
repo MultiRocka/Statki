@@ -180,7 +180,7 @@ namespace Statki
             foreach (var ship in ships)
             {
                 var opponentShip = new Ship(ship.Name + " (Opponent)", ship.Length, ship.Width);
-                turnManager.Player2.Ships.Add(opponentShip);
+                turnManager.Oponnent.Ships.Add(opponentShip);
             }
 
             // Wypisanie stanu statków gracza 1
@@ -192,21 +192,21 @@ namespace Statki
 
             // Wypisanie stanu statków przeciwnika
             Console.WriteLine("Statki przeciwnika:");
-            foreach (var ship in turnManager.Player2.Ships)
+            foreach (var ship in turnManager.Oponnent.Ships)
             {
                 ship.PrintState();
             }
             Console.WriteLine($"Player1 ship count: {turnManager.Player1.Ships.Count}");
-            Console.WriteLine($"Player2 ship count: {turnManager.Player2.Ships.Count}");
+            Console.WriteLine($"Player2 ship count: {turnManager.Oponnent.Ships.Count}");
         }
 
 
         private void TurnManager_OnGameOver()
         {
             string message = "Gra zakończona!\n";
-            message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-            message += $"Liczba tur gracza 2: {turnManager._player2Turns}\n";
-            message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+            message += $"Liczba tur gracza 1: {turnManager._playerTurns}\n";
+            message += $"Liczba tur gracza 2: {turnManager._oponnentTurns}\n";
+            message += $"Łączna liczba tur: {turnManager._playerTurns + turnManager._oponnentTurns}";
 
             MessageBox.Show(message);
         }
