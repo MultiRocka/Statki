@@ -1,9 +1,5 @@
 ﻿using Statki.Gameplay;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Statki.Board
 {
@@ -11,23 +7,61 @@ namespace Statki.Board
     {
         public void HandleTileClick(BoardTile tile)
         {
-            Console.WriteLine("Tile clicked!");
+            Console.WriteLine("Tile clicked! ", tile.Name);
 
-            // Sprawdzamy, czy to plansza przeciwnika
-            //if (!tile.IsOpponent)
-            //{
-            //    Console.WriteLine("Nie możesz strzelać w swoją własną planszę!");
-            //    return;
-            //}
+            if (tile == null)
+            {
+                Console.WriteLine("Tile is null!");
+                return;
+            }
 
-            // Sprawdzamy, czy kafelek już został kliknięty
+            if (!tile.IsOpponent)
+            {
+                Console.WriteLine("Nie możesz strzelać w swoją własną planszę!");
+                Console.WriteLine(tile.HitStatus);
+                return;
+            }
+
             if (tile.HitStatus != HitStatus.None)
             {
                 Console.WriteLine($"Tile {tile.Name} already clicked!");
                 return;
             }
 
-            // Sprawdzamy, czy jest to trafiony statek
+            var turnManager = TurnManager.Instance;
+            if (turnManager == null || turnManager.Player1 == null || turnManager.Player2 == null)
+            {
+                Console.WriteLine("TurnManager is not initialized or players are null!");
+                return;
+            }
+
+            if (turnManager._isPlayerTurn)
+            {
+                if (!turnManager.HasPlayerShot)
+                {
+                    // Gracz wykonuje strzał
+                    HandlePlayerShot(tile);
+                    turnManager.PlayerShot();  // Gracz wykonał strzał
+                    turnManager.SwitchTurn();  // Zmiana tury na przeciwnika
+                }
+                else
+                {
+                    Console.WriteLine("Player has already shot this turn!");
+                }
+            }
+            else
+            {
+                Console.WriteLine("It is not the player's turn!");
+            }
+
+            Console.WriteLine("State of turns in HandleTileClick");
+            turnManager.Stateofturns();
+
+        }
+
+
+        private void HandlePlayerShot(BoardTile tile)
+        {
             if (tile.IsOccupied)
             {
                 tile.HitStatus = HitStatus.Hit;
@@ -43,13 +77,12 @@ namespace Statki.Board
                     }
                 }
             }
-            else // Nietrafiony
+            else
             {
                 tile.HitStatus = HitStatus.Miss;
                 tile.UpdateTileAppearance();
                 Console.WriteLine($"Miss on {tile.Name}");
             }
         }
-
     }
 }

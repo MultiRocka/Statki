@@ -25,7 +25,7 @@ namespace Statki.Board
         public int Column { get; set; }
         public Ship AssignedShip { get; set; }
         public bool IsOpponent { get; set; }
-
+        public Grid ParentGrid { get; set; }
 
         public BoardTile()
         {
@@ -81,7 +81,7 @@ namespace Statki.Board
         public void ResetBackground()
         {
             if (HitStatus == HitStatus.None)
-                this.Background = Background;
+                this.Background = DefaultBackground;
             if (IsOccupied==true)
                 this.Background = Brushes.Blue;
         }
@@ -91,7 +91,8 @@ namespace Statki.Board
             // Jeśli kafelek jest zajęty przez statek i nie był jeszcze trafiony
             if (IsOccupied && HitStatus == HitStatus.None && IsOpponent ==false)
             {
-                this.Background = new ImageBrush(new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\ship.png")));
+                //this.Background = new ImageBrush(new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\ship.png")));
+                this.Background = Brushes.Blue;
             }
             else
             {
@@ -106,7 +107,7 @@ namespace Statki.Board
                     switch (HitStatus)
                     {
                         case HitStatus.None:
-                            this.Background = Background;
+                            this.Background = DefaultBackground;
                             break;
                         case HitStatus.Miss:
                             this.Background = Brushes.Gray;

@@ -10,7 +10,7 @@ namespace Statki.Gameplay
     public class Player
     {
         public string Name { get; set; }
-        public List<Ship> Ships { get; private set; }
+        public List<Ship> Ships { get; private set; } = new List<Ship>();
         public int LastShotRow { get; set; }
         public int LastShotCol { get; set; }
         private Random _random;
@@ -18,23 +18,45 @@ namespace Statki.Gameplay
         private BoardTileDragHandler _dragHandler;
         public Grid Board { get; private set; }
         public List<BoardTile> BoardTiles { get; private set; }
-        public Player(string name, Grid board)
+        public TurnManager TurnManager { get; set; }
+        private BoardTileClickHandler _clickHandler;
+
+
+        public Player(string name, Grid board, TurnManager turnManager)
         {
             Name = name;
             Board = board;
             Ships = new List<Ship>();
             _random = new Random();
-
             BoardTiles = new List<BoardTile>();
+            TurnManager = turnManager;
+
+            // Przypisanie clickHandler
+            _clickHandler = new BoardTileClickHandler();
 
             foreach (var child in Board.Children)
             {
                 if (child is BoardTile tile)
                 {
-                    BoardTiles.Add(tile);  // Dodajemy kafelki do listy
+                    BoardTiles.Add(tile);
                 }
             }
         }
+
+
+
+        public virtual void MakeShot(BoardTile targetTile)
+        {
+            if (TurnManager._isPlayerTurn && !TurnManager.HasPlayerShot)
+            {
+                if (_clickHandler != null)
+                {
+                    _clickHandler.HandleTileClick(targetTile);
+                    TurnManager.PlayerShot();
+                }
+            }
+        }
+
 
         public void PlaceShipsRandomly()
         {
@@ -107,22 +129,20 @@ namespace Statki.Gameplay
 
             for (int i = 0; i < ship.Length; i++)
             {
-                for (int j = 0; j < ship.Width; j++)
-                {
-                    int row = isHorizontal ? startRow + j : startRow + i;
-                    int col = isHorizontal ? startCol + i : startCol + j;
+                int row = isHorizontal ? startRow : startRow + i;
+                int col = isHorizontal ? startCol + i : startCol;
 
-                    BoardTile tile = GetTileAtPosition(row, col, board);
-                    if (tile != null)
-                    {
-                        tile.IsOccupied = true;
-                        tile.AssignedShip = ship;
-                        ship.OccupiedTiles.Add(tile); // Dodaj do listy zajętych kafelków
-                        tile.UpdateTileAppearance();
-                    }
+                BoardTile tile = GetTileAtPosition(row, col, board);
+                if (tile != null)
+                {
+                    tile.IsOccupied = true;
+                    tile.AssignedShip = ship;
+                    ship.OccupiedTiles.Add(tile); // Dodaj do listy zajętych kafelków
+                    tile.UpdateTileAppearance();
                 }
             }
         }
+
 
 
 
@@ -168,7 +188,7 @@ namespace Statki.Gameplay
             return true; // Jeżeli wszystkie sprawdzenia przeszły pomyślnie, możemy postawić statek
         }
 
-        private BoardTile GetTileAtPosition(int row, int col, Grid board)
+        public BoardTile GetTileAtPosition(int row, int col, Grid board)
         {
             foreach (var child in board.Children)
             {
@@ -184,14 +204,23 @@ namespace Statki.Gameplay
 
         public bool AllShipsSunk()
         {
-            // Sprawdzanie, czy wszystkie statki gracza zostały zatopione
-            foreach (var ship in Ships)
+            if (TurnManager == null)
             {
-                if (!ship.CheckIfSunk())
-                    return false;
+                Console.WriteLine("TurnManager is null in AllShipsSunk.");
+                return false;
             }
-            return true;
+
+            if (Ships == null)
+            {
+                Console.WriteLine($"Player {Name} has no ships assigned.");
+                return false;
+            }
+
+            return Ships.All(ship => ship != null && ship.IsSunk);
         }
+
+
+
 
         public Ship GetShipAtPosition(int row, int col)
         {
@@ -218,7 +247,11 @@ namespace Statki.Gameplay
                     }
                 }
                 return true; // Wszystkie statki mają przypisane zajęte pola
-          }
+         }
+        public bool CheckIfAllShipsSunk()
+        {
+            return Ships.All(ship => ship.IsSunk);
+        }
 
     }
 }

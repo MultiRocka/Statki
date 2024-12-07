@@ -10,11 +10,53 @@ namespace Statki.Gameplay
     public class Opponent : Player
     {
         private List<(int Row, int Col)> AvailableShots;
+        private BoardTileClickHandler _clickHandler;
+        private TurnManager TurnManager => TurnManager.Instance; // Ensure it always fetches the current instance
 
-        public Opponent(string name, Grid board) : base(name, board) // Zgodnie z definicją konstruktora Player
+
+        public Opponent(string name, Grid board) : base(name, board, TurnManager.Instance) // Pass TurnManager to the base class constructor
         {
             InitializeAvailableShots();
         }
+
+        public override void MakeShot(BoardTile targetTile)
+        {
+            if (targetTile == null)
+            {
+                Console.WriteLine("Target tile is null!");
+                return;
+            }
+
+            if (targetTile.HitStatus != HitStatus.None)
+            {
+                Console.WriteLine($"Tile {targetTile.Name} already hit!");
+                return;
+            }
+
+            if (targetTile.IsOccupied)
+            {
+                targetTile.HitStatus = HitStatus.Hit;
+                Console.WriteLine($"Hit on {targetTile.Name}");
+                targetTile.UpdateTileAppearance();
+
+                if (targetTile.AssignedShip != null)
+                {
+                    targetTile.AssignedShip.CheckIfSunk();
+                    if (targetTile.AssignedShip.IsSunk)
+                    {
+                        Console.WriteLine($"Ship {targetTile.AssignedShip.Name} is sunk!");
+                    }
+                }
+            }
+            else
+            {
+                targetTile.HitStatus = HitStatus.Miss;
+                Console.WriteLine($"Miss on {targetTile.Name}");
+                targetTile.UpdateTileAppearance();
+            }
+        }
+
+
 
         // Inicjalizacja dostępnych strzałów
         private void InitializeAvailableShots()
@@ -30,50 +72,27 @@ namespace Statki.Gameplay
         }
 
         // Losowy strzał w planszę przeciwnika
-        public (int Row, int Col) MakeRandomShot(Grid opponentBoard)
+        public void MakeRandomShot(Grid opponentBoard)
         {
             if (AvailableShots.Count == 0)
             {
-                throw new InvalidOperationException("Brak dostępnych strzałów.");
+                Console.WriteLine("No available shots left!");
+                return;
             }
 
-            // Wybierz losowy strzał z listy dostępnych
-            Random random = new Random();
+            var random = new Random();
             int index = random.Next(AvailableShots.Count);
             var (row, col) = AvailableShots[index];
-
-            // Usuń strzał z listy, aby nie powtarzać
             AvailableShots.RemoveAt(index);
 
-            // Zaznacz wynik strzału na planszy przeciwnika
-            foreach (var child in opponentBoard.Children)
+            var targetTile = base.GetTileAtPosition(row, col, opponentBoard);
+            if (targetTile != null)
             {
-                if (child is BoardTile tile && tile.Row == row && tile.Column == col)
-                {
-                    // Jeśli pole jest zajęte przez statek
-                    if (tile.AssignedShip != null)
-                    {
-                        tile.HitStatus = HitStatus.Hit; // Jeśli trafiono
-                        tile.Background = Brushes.Red; // Zmiana koloru na czerwony (trafienie)
-
-                        // Sprawdzenie, czy statek jest zatopiony
-                        if (tile.AssignedShip.CheckIfSunk())
-                        {
-                            Console.WriteLine($"Statek przeciwnika {tile.AssignedShip.Name} został zatopiony!");
-                        }
-                    }
-                    else
-                    {
-                        tile.HitStatus = HitStatus.Miss; // Jeśli pole jest puste, status to "miss"
-                        tile.Background = Brushes.Gray; // Zmiana koloru na szary (nietrafiony)
-                        Console.WriteLine($"Miss on {tile.Name}");
-                    }
-                    break;
-                }
+                Console.WriteLine($"Opponent shooting at {targetTile.Name}");
+                MakeShot(targetTile); // Wywołaj logikę strzału
             }
-
-            return (row, col);
         }
+
 
 
     }

@@ -51,7 +51,7 @@ namespace Statki.Board
 
             _dragHandler = new BoardTileDragHandler(boardGrid);
 
-            BitmapImage waterGif = new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\water.png"));
+            //BitmapImage waterGif = new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\water.png"));
 
             // Dodanie pól planszy jako BoardTile
             for (int row = 1; row <= 10; row++)
@@ -67,10 +67,13 @@ namespace Statki.Board
 
                         Row = row, // Przypisanie wiersza
                         Column = col, // Przypisanie kolumny
-                        IsOpponent = isOpponent // Ustawiamy IsOpponent
+                        IsOpponent = isOpponent, // Ustawiamy IsOpponent
+
+                        ParentGrid = boardGrid
                     };
 
-                    tile.SetBackgroundImage(waterGif);
+                    //tile.SetBackgroundImage(waterGif);
+
                     // Zdarzenia przeciągania
                     tile.Drop += _dragHandler.BoardTile_Drop;
                     tile.DragEnter += _dragHandler.BoardTile_DragEnter;
