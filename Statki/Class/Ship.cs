@@ -14,9 +14,13 @@ namespace Statki.Class
         public bool IsHorizontal { get; set; } = true;
         public bool IsPlaced { get; set; } = false;
 
+        public bool IsSunk { get; private set; } = false;
+
         public List<BoardTile> OccupiedTiles { get; set; } = new List<BoardTile>();
-        public List<BoardTile> PreviousOccupiedTiles { get; set; } = new List<BoardTile>(); 
-        
+        public List<BoardTile> PreviousOccupiedTiles { get; set; } = new List<BoardTile>();
+
+        public BoardTile BoardTile;
+
 
         public Ship(string name, int length, int width)
         {
@@ -89,7 +93,8 @@ namespace Statki.Class
         }
         public void UpdateOccupiedTiles(int startRow, int startCol, Grid gameGrid)
         {
-            OccupiedTiles.Clear(); // Wyczyść poprzednie zajęte pola
+            OccupiedTiles.Clear();
+            Console.WriteLine($"Updating tiles for {Name} starting at ({startRow}, {startCol})");
 
             for (int i = 0; i < Length; i++)
             {
@@ -98,16 +103,25 @@ namespace Statki.Class
                     int row = IsHorizontal ? startRow : startRow + j;
                     int col = IsHorizontal ? startCol + i : startCol;
 
+                    if (row < 0 || col < 0 || row >= gameGrid.RowDefinitions.Count || col >= gameGrid.ColumnDefinitions.Count)
+                    {
+                        Console.WriteLine($"Tile ({row}, {col}) is out of bounds for {Name}.");
+                        continue;
+                    }
+
                     BoardTile gridTile = GetTileAtPosition(row, col, gameGrid);
                     if (gridTile != null)
                     {
                         OccupiedTiles.Add(gridTile);
+                        Console.WriteLine($"Added tile {gridTile.Name} to {Name}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Tile ({row}, {col}) not found in game grid.");
                     }
                 }
             }
         }
-
-
 
         private BoardTile GetTileAtPosition(int row, int col, Grid gameGrid)
         {
@@ -128,20 +142,53 @@ namespace Statki.Class
             Width = temp;
         }
 
-        public bool IsSunk()
+        public bool CheckIfSunk()
         {
+            if (IsSunk)
+            {
+                Console.WriteLine($"{Name} is already sunk!");
+                return true;
+            }
+
             foreach (var tile in OccupiedTiles)
             {
                 Console.WriteLine($"Checking tile {tile.Name}: HitStatus = {tile.HitStatus}");
                 if (tile.HitStatus != HitStatus.Hit)
                 {
-                    Console.WriteLine($"{Name}: Not sunk yet! Tile {tile.Name} is not hit.");
-                    return false; // Jeśli którykolwiek kafelek nie został trafiony, statek nie jest zatopiony
+                    Console.WriteLine($"{Name} is not sunk. Tile {tile.Name} is not hit.");
+                    return false;
                 }
             }
-            Console.WriteLine($"{Name} is sunk!");
-            return true; // Wszystkie kafelki zostały trafione, statek zatopiony
+
+            IsSunk = true;
+            Console.WriteLine($"{Name} is now sunk!");
+
+            foreach (var tile in OccupiedTiles)
+            {
+                tile.UpdateTileAppearance();
+            }
+
+            return true;
         }
+
+
+        public void PrintState()
+        {
+            Console.WriteLine($"\n" +
+                $"Ship: {Name}");
+
+            Console.WriteLine($" - Length: {Length}");
+            Console.WriteLine($" - Width: {Width}");
+            Console.WriteLine($" - IsHorizontal: {IsHorizontal}");
+            Console.WriteLine($" - IsPlaced: {IsPlaced}");
+            Console.WriteLine($" - IsSunk: {IsSunk}");
+            Console.WriteLine($" - OccupiedTiles: {OccupiedTiles.Count}");
+            foreach (var tile in OccupiedTiles)
+            {
+                Console.WriteLine($"   - Tile: {tile.Name}, HitStatus: {tile.HitStatus}");
+            }
+        }
+
 
     }
 }

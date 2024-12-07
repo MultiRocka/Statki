@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Statki.Board;
+using Statki.Class;
+using Statki.Gameplay;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
-using Statki.Board;
-using Statki.Class;
+using System.Windows.Threading;
 
 namespace Statki
 {
@@ -14,146 +13,234 @@ namespace Statki
         private Grid gameGrid;
         private Grid opponentGrid;
         private BoardTileDragHandler _dragHandler;
-        private List<Ship> ships = new List<Ship>(); // Lista wszystkich statków
+        private List<Ship> ships = new List<Ship>();
         private KeyAndMouseMonitor shipDragHandler = new KeyAndMouseMonitor();
+        private BoardGridCreator boardGridCreator;
+        private TurnManager turnManager;
+        private TextBlock timerTextBlock;
+        private Button readyButton;
+
+        public event Action<int> OnTimerUpdate;
 
         public MainWindow()
         {
             InitializeComponent();
             CreateLayout();
-            CreateShips(); // Tworzymy statki w lewym panelu
-            Width = 1200;
-            Height = 600;
+            CreateShips();
+            InitializePlayersAndTurnManager();
 
-            MinHeight = 400;
-            MinWidth = 1000;
+            MinHeight = 600;
+            MinWidth = 1200;
+
+            Height = 600;
+            Width = 1400;
         }
 
         private void CreateLayout()
         {
-            // Tworzenie głównej siatki
+            // Create main grid
             Grid mainGrid = new Grid();
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(200) }); // Lewa kolumna na statki
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Plansza gracza
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Plansza przeciwnika
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
+            mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-            // Tworzenie panelu dla statków po lewej stronie
-            StackPanel leftPanel = new StackPanel
+            // Left Panel for Ships
+            StackPanel leftPanel = CreateLeftPanel();
+            Grid.SetColumn(leftPanel, 0);
+            Grid.SetRow(leftPanel, 1);
+            mainGrid.Children.Add(leftPanel);
+
+            // Player and Opponent Boards
+            gameGrid = CreateBoardGrid(isOpponent: false);
+            opponentGrid = CreateBoardGrid(isOpponent: true);
+
+            Grid.SetColumn(gameGrid, 1);
+            Grid.SetRow(gameGrid, 1);
+            mainGrid.Children.Add(gameGrid);
+
+            Grid.SetColumn(opponentGrid, 3);
+            Grid.SetRow(opponentGrid, 1);
+            mainGrid.Children.Add(opponentGrid);
+
+            // Timer Panel
+            StackPanel timerPanel = CreateTimerPanel();
+            Grid.SetColumn(timerPanel, 2);
+            Grid.SetRow(timerPanel, 1);
+            mainGrid.Children.Add(timerPanel);
+
+            this.Content = mainGrid;
+        }
+
+        private StackPanel CreateLeftPanel()
+        {
+            return new StackPanel
             {
                 Orientation = Orientation.Vertical,
                 Width = 200,
                 Background = Brushes.LightGray,
-                Margin = new Thickness(10)
+                Visibility = Visibility.Visible
             };
-            Grid.SetColumn(leftPanel, 0);
-            mainGrid.Children.Add(leftPanel);
-
-            // Tworzenie planszy gracza
-            gameGrid = CreatePlayerBoard();
-            Grid.SetColumn(gameGrid, 1);
-            mainGrid.Children.Add(gameGrid);
-
-            // Tworzenie planszy przeciwnika
-            opponentGrid = CreateOpponentBoard();
-            Grid.SetColumn(opponentGrid, 2);
-            opponentGrid.Margin = new Thickness(10, 0, 0, 0); // Dodanie odstępu od planszy gracza
-            mainGrid.Children.Add(opponentGrid);
-
-            // Ustawienie głównej zawartości okna
-            this.Content = mainGrid;
         }
 
-        private Grid CreatePlayerBoard()
+        private Grid CreateBoardGrid(bool isOpponent)
         {
-            return CreateBoardGrid(isOpponent: false); // Plansza gracza obsługuje przeciąganie statków
+            boardGridCreator = new BoardGridCreator();
+            return boardGridCreator.CreateBoardGrid(isOpponent);
         }
 
-        private Grid CreateOpponentBoard()
+        private StackPanel CreateTimerPanel()
         {
-            return CreateBoardGrid(isOpponent: true); // Plansza przeciwnika nie obsługuje przeciągania statków
-        }
-
-        private Grid CreateBoardGrid(bool isOpponent = false)
-        {
-            Grid boardGrid = new Grid
+            StackPanel timerPanel = new StackPanel { Orientation = Orientation.Vertical };
+            timerTextBlock = new TextBlock
             {
-                ShowGridLines = false
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5)
             };
+            timerPanel.Children.Add(timerTextBlock);
 
-            for (int i = 0; i < 11; i++)
+            readyButton = new Button
             {
-                boardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                boardGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            }
+                Content = "Ready",
+                Width = 100,
+                Height = 50,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+            readyButton.Click += ReadyButton_Click;
+            timerPanel.Children.Add(readyButton);
 
-            // Dodanie etykiet wierszy i kolumn
-            for (int i = 1; i <= 10; i++)
-            {
-                TextBlock colHeader = new TextBlock
-                {
-                    Text = ((char)(i + 64)).ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                Grid.SetRow(colHeader, 0);
-                Grid.SetColumn(colHeader, i);
-                boardGrid.Children.Add(colHeader);
-
-                TextBlock rowHeader = new TextBlock
-                {
-                    Text = i.ToString(),
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center
-                };
-                Grid.SetRow(rowHeader, i);
-                Grid.SetColumn(rowHeader, 0);
-                boardGrid.Children.Add(rowHeader);
-            }
-
-            _dragHandler = new BoardTileDragHandler(boardGrid);
-
-            // Dodanie pól planszy jako BoardTile
-            for (int row = 1; row <= 10; row++)
-            {
-                for (int col = 1; col <= 10; col++)
-                {
-                    BoardTile tile = new BoardTile
-                    {
-                        Name = $"{(char)(col + 64)}{row}",
-                        HorizontalAlignment = HorizontalAlignment.Stretch,
-                        VerticalAlignment = VerticalAlignment.Stretch,
-                        AllowDrop = !isOpponent // Tylko plansza gracza obsługuje upuszczanie
-                    };
-
-                     tile.Drop += _dragHandler.BoardTile_Drop; // Obsługa upuszczania
-                     tile.DragEnter += _dragHandler.BoardTile_DragEnter;
-                     tile.DragOver += _dragHandler.BoardTile_DragOver;
-                     tile.DragLeave += _dragHandler.BoardTile_DragLeave;
-
-                    Grid.SetRow(tile, row);
-                    Grid.SetColumn(tile, col);
-                    boardGrid.Children.Add(tile);
-                }
-            }
-
-            return boardGrid;
+            return timerPanel;
         }
+
+        private void InitializePlayersAndTurnManager()
+        {
+            // Create Player 1 and Opponent, but do not assign the TurnManager yet
+            Player player1 = new Player("Gracz 1", gameGrid, null);
+            Opponent opponent = new Opponent("Oponent", opponentGrid);
+
+            // Initialize TurnManager singleton with players and readyButton
+            TurnManager.Initialize(player1, opponent, readyButton);
+
+            // Assign the TurnManager to the players
+            player1.TurnManager = TurnManager.Instance;
+            opponent.TurnManager = TurnManager.Instance;
+
+            // Retrieve the initialized TurnManager instance
+            turnManager = TurnManager.Instance;
+
+            // Subscribe to TurnManager events
+            if (turnManager != null)
+            {
+                turnManager.OnGameOver += TurnManager_OnGameOver;
+                turnManager.OnTimerUpdate += UpdateTimerText;
+            }
+            else
+            {
+                throw new InvalidOperationException("TurnManager is not properly initialized.");
+            }
+
+            // Assign ships to players
+            AssignShipsToPlayers();
+
+            // Start the game
+            turnManager.Start();
+        }
+
+
+
+
 
         private void CreateShips()
         {
-            // Znalezienie lewego panelu (pierwsza kolumna głównej siatki)
             StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
 
-            // Inicjalizator statków
-            ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, leftPanel);
+            // Inicjalizacja statków
+            ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, ((StackPanel)((Grid)this.Content).Children[0]));
 
-            // Tworzenie statków
-            initializer.CreateShip("Test Ship 1", 3, 2);
+            initializer.CreateShip("Test Ship 1", 5, 1);
             initializer.CreateShip("Test Ship 2", 4, 1);
-            initializer.CreateShip("Test Ship 3", 2, 1);
+            initializer.CreateShip("Test Ship 3", 3, 1);
+            initializer.CreateShip("Test Ship 4", 2, 1);
+            initializer.CreateShip("Test Ship 5", 1, 1);
+        }
+
+        private void AssignShipsToPlayers()
+        {
+            // Przypisujemy statki graczowi 1
+            foreach (var ship in ships)
+            {
+                turnManager.Player1.Ships.Add(ship);
+            }
+
+            // Tworzymy kopie statków dla przeciwnika
+            foreach (var ship in ships)
+            {
+                var opponentShip = new Ship(ship.Name + " (Opponent)", ship.Length, ship.Width);
+                turnManager.Player2.Ships.Add(opponentShip);
+            }
+
+            // Wypisanie stanu statków gracza 1
+            Console.WriteLine("Statki gracza 1:");
+            foreach (var ship in turnManager.Player1.Ships)
+            {
+                ship.PrintState();
+            }
+
+            // Wypisanie stanu statków przeciwnika
+            Console.WriteLine("Statki przeciwnika:");
+            foreach (var ship in turnManager.Player2.Ships)
+            {
+                ship.PrintState();
+            }
+            Console.WriteLine($"Player1 ship count: {turnManager.Player1.Ships.Count}");
+            Console.WriteLine($"Player2 ship count: {turnManager.Player2.Ships.Count}");
+        }
 
 
+        private void TurnManager_OnGameOver()
+        {
+            string message = "Gra zakończona!\n";
+            message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
+            message += $"Liczba tur gracza 2: {turnManager._player2Turns}\n";
+            message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+
+            MessageBox.Show(message);
+        }
+
+        private void UpdateTimerText(int remainingTime)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                timerTextBlock.Text = $"czas: {remainingTime} s";
+
+                if (remainingTime <= 3)
+                {
+                    readyButton.Visibility = Visibility.Hidden;
+                    StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+                    leftPanel.Visibility = Visibility.Collapsed;
+
+                    Grid mainGrid = (Grid)this.Content;
+                    mainGrid.ColumnDefinitions[0].Width = new GridLength(0);
+                }
+
+                timerTextBlock.Foreground = remainingTime <= 5 ? Brushes.Red : Brushes.Black;
+            });
+        }
+
+        private void ReadyButton_Click(object sender, RoutedEventArgs e)
+        {
+            readyButton.Visibility = Visibility.Hidden;
+            StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+            leftPanel.Visibility = Visibility.Hidden;
+
+            Grid mainGrid = (Grid)this.Content;
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(0);
+
+            turnManager.SetTimerTo3Seconds();
         }
     }
-
 }
