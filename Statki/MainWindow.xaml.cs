@@ -203,13 +203,32 @@ namespace Statki
 
         private void TurnManager_OnGameOver()
         {
-            string message = "Gra zakończona!\n";
-            message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-            message += $"Liczba tur gracza 2: {turnManager._player2Turns}\n";
-            message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+            string message;
+            string title;
 
-            MessageBox.Show(message);
+            if (turnManager.Player1.AllShipsSunk())
+            {
+                // Opponent wygrał
+                message = "YOU LOSE\n\n";
+                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
+                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+                title = "Game Over";
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else if (turnManager.Player2.AllShipsSunk())
+            {
+                // Player1 wygrał
+                message = "YOU WIN\n\n";
+                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
+                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+                title = "Game Over";
+                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
+
+
 
         private void UpdateTimerText(int remainingTime)
         {

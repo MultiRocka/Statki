@@ -174,7 +174,7 @@ namespace Statki.Gameplay
                 _isPlayerTurn = false; // Player ends their turn
                 HasPlayerShot = false;
                 Console.WriteLine("***Player turn***");
-                _player1Turns++;
+                
             }
             else
             {
@@ -188,7 +188,7 @@ namespace Statki.Gameplay
 
                 _isPlayerTurn = true; // Opponent ends their turn, player starts next
                 HasOpponentShot = false;
-                _player2Turns++;
+ 
 
             }
 
@@ -226,6 +226,7 @@ namespace Statki.Gameplay
             HasPlayerShot = true;
             _isPlayerTurn = false;
             HasOpponentShot = false;
+            _player1Turns++;
         }
 
         public void OpponentShot()
@@ -233,37 +234,27 @@ namespace Statki.Gameplay
             HasOpponentShot = true;
             _isPlayerTurn = true;
             HasPlayerShot = false;
+            _player2Turns++;
         }
 
         private void CheckForWinner()
         {
-            // Debugging log
             Console.WriteLine("Checking winner...");
-            Console.WriteLine($"Player1: {(Player1 == null ? "null" : "not null")}");
-            Console.WriteLine($"Player2: {(Player2 == null ? "null" : "not null")}");
 
-            if (Player1 != null)
-            {
-                Console.WriteLine($"Player1 AllShipsSunk: {Player1.AllShipsSunk()}");
-            }
-
-            if (Player2 != null)
-            {
-                Console.WriteLine($"Player2 AllShipsSunk: {Player2.AllShipsSunk()}");
-            }
-
-            if (Player1 != null && Player1.AllShipsSunk() || Player2 != null && Player2.AllShipsSunk())
+            if ((Player1 != null && Player1.AllShipsSunk()) || (Player2 != null && Player2.AllShipsSunk()))
             {
                 _isGameOver = true;
                 _turnTimer.Stop();
-                OnGameOver?.Invoke();
 
                 Console.WriteLine("Game Over!");
                 Console.WriteLine($"Player 1 turns: {_player1Turns}");
                 Console.WriteLine($"Player 2 turns: {_player2Turns}");
                 Console.WriteLine($"Total turns: {_player1Turns + _player2Turns}");
+
+                OnGameOver?.Invoke();
             }
         }
+
 
 
         // Metoda do ustawiania czasu na 3 sekundy po kliknięciu przycisku
