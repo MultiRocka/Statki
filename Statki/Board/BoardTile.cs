@@ -26,13 +26,55 @@ namespace Statki.Board
         public Ship AssignedShip { get; set; }
         public bool IsOpponent { get; set; }
         public Grid ParentGrid { get; set; }
+        private Border HoverOverlay { get; set; }
 
         public BoardTile()
         {
             this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
-            this.MouseEnter += BoardTile_MouseEnter;
-            this.MouseLeave += BoardTile_MouseLeave;
+            //this.MouseEnter += BoardTile_MouseEnter;
+            //this.MouseLeave += BoardTile_MouseLeave;
+            this.Style = CreateCustomStyle();
+        }
+        private Style CreateCustomStyle()
+        {
+            // Tworzenie stylu
+            var style = new Style(typeof(BoardTile));
+
+            // Domyślne właściwości
+            style.Setters.Add(new Setter(BackgroundProperty, Brushes.LightBlue));
+            style.Setters.Add(new Setter(BorderBrushProperty, Brushes.Black));
+            style.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(1)));
+
+            // Template przycisku
+            var template = new ControlTemplate(typeof(BoardTile));
+            var borderFactory = new FrameworkElementFactory(typeof(Border));
+            borderFactory.SetValue(Border.BackgroundProperty, new TemplateBindingExtension(BackgroundProperty));
+            borderFactory.SetValue(Border.BorderBrushProperty, new TemplateBindingExtension(BorderBrushProperty));
+            borderFactory.SetValue(Border.BorderThicknessProperty, new TemplateBindingExtension(BorderThicknessProperty));
+
+            var contentPresenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+
+            borderFactory.AppendChild(contentPresenterFactory);
+            template.VisualTree = borderFactory;
+
+            style.Setters.Add(new Setter(TemplateProperty, template));
+
+            // Trigger dla IsMouseOver
+            var isMouseOverTrigger = new Trigger
+            {
+                Property = IsMouseOverProperty,
+                Value = true
+            };
+            isMouseOverTrigger.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
+            isMouseOverTrigger.Setters.Add(new Setter(BorderBrushProperty, Brushes.DarkBlue));
+            isMouseOverTrigger.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(5))); // Zwiększenie grubości obramowania
+
+            style.Triggers.Add(isMouseOverTrigger);
+
+            return style;
         }
 
         private void BoardTile_Click(object sender, RoutedEventArgs e)
