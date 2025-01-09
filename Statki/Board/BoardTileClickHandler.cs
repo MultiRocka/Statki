@@ -7,7 +7,7 @@ namespace Statki.Board
     {
         public void HandleTileClick(BoardTile tile)
         {
-            Console.WriteLine("Tile clicked!");
+            Console.WriteLine("Tile clicked! ", tile.Name);
 
             if (tile == null)
             {
@@ -18,6 +18,7 @@ namespace Statki.Board
             if (!tile.IsOpponent)
             {
                 Console.WriteLine("Nie możesz strzelać w swoją własną planszę!");
+                Console.WriteLine(tile.HitStatus);
                 return;
             }
 

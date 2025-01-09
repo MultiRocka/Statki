@@ -271,10 +271,10 @@ namespace Statki
             else
             {
                 // Wyróżnienie aktywnej planszy
-                gameGrid.Opacity = isPlayerTurn ? 0.5 : 1.0;
+                gameGrid.Opacity = isPlayerTurn ? 0.7 : 1.0;
                 gameGrid.Effect = isPlayerTurn ? new System.Windows.Media.Effects.BlurEffect { Radius = 3 } : null;
                 
-                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.5;
+                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.7;
                 opponentGrid.Effect = isPlayerTurn ? null : new System.Windows.Media.Effects.BlurEffect { Radius = 3 };
             }
         }
