@@ -16,7 +16,7 @@ namespace Statki.Gameplay
         public Player Player2 { get; set; }
 
         public bool _isPlayerTurn { get; private set; } // Czy tura należy do gracza (true - gracz, false - przeciwnik)
-        public bool HasPlayerShot {  get; private set; } = false;
+        public bool HasPlayerShot {  get;  set; } = false;
         public bool HasOpponentShot { get; private set; } =false;
 
         private DispatcherTimer _turnTimer;
@@ -115,7 +115,7 @@ namespace Statki.Gameplay
                 }
                 else
                 {
-                    SwitchTurn();  // Zmieniamy turę po upływie czasu
+                    SwitchTurn();  
                 }
             }
         }
@@ -144,70 +144,75 @@ namespace Statki.Gameplay
         {
             // Rozpoczynamy fazę tur
             _isPlayerTurn = _random.Next(2) == 0; // Losowanie, kto zaczyna turę
+            _isPlayerTurn = false;
             Console.WriteLine(_isPlayerTurn ? "Player 1 starts!" : "Player 2 starts!");
+            if (_isPlayerTurn) OpponentShot(); else PlayerShot();
             _turnTimeRemaining = 20; // Resetujemy czas na turę
             _turnTimer.Start();
+            SwitchTurn();
 
-            // Nie wykonuj losowego strzału od razu, tylko czekaj na kliknięcie gracza
-            if (!_isPlayerTurn)
+            Application.Current.Dispatcher.Invoke(() =>
             {
-                // Jeśli to nie gracz, wykonaj strzał przeciwnika, ale nie zmieniaj tury
-                Opponent opponent = Player2 as Opponent;
-                if (opponent != null)
-                {
-                    opponent.MakeRandomShot(Player1.Board); // Losowy strzał w planszę gracza
-                    OpponentShot(); // Rejestruj strzał
-                }
-            }
+                ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(_isPlayerTurn, false);
+            });
 
             Stateofturns();
 
         }
 
-        public void SwitchTurn()
+        public async void SwitchTurn()
         {
-            // Zmieniamy turę
-            Console.WriteLine($"Switching turn: {_isPlayerTurn}");
+            // Debugging przed zmianą tury
+            Console.WriteLine($"Switching turn. Current turn: {_isPlayerTurn}");
 
-            if (_isPlayerTurn)
+            // Zmiana flagi tury
+            _isPlayerTurn = !_isPlayerTurn;
+
+            if (_isPlayerTurn) // Tura gracza
             {
-                _isPlayerTurn = false; // Player ends their turn
-                HasPlayerShot = false;
-                Console.WriteLine("***Player turn***");
-                
+                Console.WriteLine("*** Player's Turn ***");
+                HasPlayerShot = false;  // Gracz jeszcze nie strzelał
+                HasOpponentShot = false;  // Resetujemy stan przeciwnika
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(true, false); // Podświetlamy planszę gracza
+                });
             }
-            else
+            else // Tura przeciwnika
             {
-                Console.WriteLine("""---Oponnent turn----""");
+                Console.WriteLine("--- Opponent's Turn ---");
+                HasPlayerShot = false;  // Resetujemy stan gracza
+                HasOpponentShot = false; // Przeciwnik jeszcze nie strzelał
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(false, false); // Podświetlamy planszę przeciwnika
+                });
+
+                // Przeciwnik wykonuje strzał
                 Opponent opponent = Player2 as Opponent;
                 if (opponent != null)
                 {
-                    opponent.MakeRandomShot(Player1.Board); 
-                    OpponentShot(); 
+                    await Task.Delay(400);
+                    opponent.MakeRandomShot(Player1.Board); // Strzał przeciwnika
+                    OpponentShot(); // Aktualizacja stanu po strzale przeciwnika
+                    SwitchTurn();
                 }
-
-                _isPlayerTurn = true; // Opponent ends their turn, player starts next
-                HasOpponentShot = false;
- 
-
             }
 
+            // Debugging po zmianie tury
+            Stateofturns();
 
-            // Resetujemy czas na turę
-            _turnTimeRemaining = 80;
+            // Reset czasu na turę
+            _turnTimeRemaining = 20;
             OnTimerUpdate?.Invoke(_turnTimeRemaining);
 
-            // Sprawdzamy, czy ktoś wygrał
-            Console.WriteLine($"""
-
-                Checking winner
-                """);
+            // Sprawdzenie, czy ktoś wygrał
             CheckForWinner();
-
-            Console.WriteLine("State of turns end of switchturn");
-            Stateofturns();
-
         }
+
+
+
+
 
         public void Stateofturns()
         {
@@ -223,19 +228,41 @@ namespace Statki.Gameplay
 
         public void PlayerShot()
         {
+            Console.WriteLine("Player shot executed");
             HasPlayerShot = true;
-            _isPlayerTurn = false;
             HasOpponentShot = false;
             _player1Turns++;
+
+            //updating which board is active
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(_isPlayerTurn, true);
+            });
+
+            Stateofturns();
         }
 
         public void OpponentShot()
         {
-            HasOpponentShot = true;
-            _isPlayerTurn = true;
-            HasPlayerShot = false;
-            _player2Turns++;
+            Console.WriteLine("Opponent shot executed");
+            HasOpponentShot = true;  // Oznaczamy, że przeciwnik wykonał strzał
+            HasPlayerShot = false;   // Resetujemy flagę strzału gracza
+
+            _player2Turns++;  // Zwiększamy liczbę tur przeciwnika
+
+            // Uaktualniamy aktywność planszy
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(_isPlayerTurn, true);
+            });
+
+            // Debugging state after shot
+            Stateofturns();
         }
+
+
+
+
 
         private void CheckForWinner()
         {

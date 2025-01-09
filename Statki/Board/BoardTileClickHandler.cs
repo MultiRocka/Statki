@@ -7,7 +7,7 @@ namespace Statki.Board
     {
         public void HandleTileClick(BoardTile tile)
         {
-            Console.WriteLine("Tile clicked! ", tile.Name);
+            Console.WriteLine("Tile clicked!");
 
             if (tile == null)
             {
@@ -18,7 +18,6 @@ namespace Statki.Board
             if (!tile.IsOpponent)
             {
                 Console.WriteLine("Nie możesz strzelać w swoją własną planszę!");
-                Console.WriteLine(tile.HitStatus);
                 return;
             }
 
@@ -35,14 +34,16 @@ namespace Statki.Board
                 return;
             }
 
-            if (turnManager._isPlayerTurn)
+            if (turnManager._isPlayerTurn) // Gracz może strzelać tylko w swojej turze
             {
-                if (!turnManager.HasPlayerShot)
+                if (!turnManager.HasPlayerShot) // Sprawdzamy, czy gracz już strzelał
                 {
-                    // Gracz wykonuje strzał
-                    HandlePlayerShot(tile);
-                    turnManager.PlayerShot();  // Gracz wykonał strzał
-                    turnManager.SwitchTurn();  // Zmiana tury na przeciwnika
+                    HandlePlayerShot(tile);  // Gracz wykonuje strzał
+                    turnManager.HasPlayerShot = true; // Oznaczamy, że gracz wykonał strzał
+
+                    Console.WriteLine("----Player shot------");
+                    turnManager.PlayerShot();
+                    turnManager.SwitchTurn();  // Przełączamy na turę przeciwnika 
                 }
                 else
                 {
@@ -54,9 +55,8 @@ namespace Statki.Board
                 Console.WriteLine("It is not the player's turn!");
             }
 
-            Console.WriteLine("State of turns in HandleTileClick");
+            Console.WriteLine("State of turns in HandleTileClick:");
             turnManager.Stateofturns();
-
         }
 
 

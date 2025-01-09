@@ -150,10 +150,6 @@ namespace Statki
             turnManager.Start();
         }
 
-
-
-
-
         private void CreateShips()
         {
             StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
@@ -261,5 +257,28 @@ namespace Statki
 
             turnManager.SetTimerTo3Seconds();
         }
+
+        public void HighlightBoard(bool isPlayerTurn, bool actionCompleted)
+        {
+            if (actionCompleted)
+            {
+                // Reset stylów po akcji
+                gameGrid.Opacity = 1.0;
+                gameGrid.Effect = null;
+                opponentGrid.Opacity = 1.0;
+                opponentGrid.Effect = null;
+            }
+            else
+            {
+                // Wyróżnienie aktywnej planszy
+                gameGrid.Opacity = isPlayerTurn ? 0.5 : 1.0;
+                gameGrid.Effect = isPlayerTurn ? new System.Windows.Media.Effects.BlurEffect { Radius = 3 } : null;
+                
+                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.5;
+                opponentGrid.Effect = isPlayerTurn ? null : new System.Windows.Media.Effects.BlurEffect { Radius = 3 };
+            }
+        }
+
+
     }
 }
