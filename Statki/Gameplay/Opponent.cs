@@ -11,8 +11,6 @@ namespace Statki.Gameplay
     {
         private List<(int Row, int Col)> AvailableShots;
         private BoardTileClickHandler _clickHandler;
-        private TurnManager TurnManager => TurnManager.Instance; // Ensure it always fetches the current instance
-
 
         public Opponent(string name, Grid board) : base(name, board, TurnManager.Instance) // Pass TurnManager to the base class constructor
         {
@@ -89,11 +87,22 @@ namespace Statki.Gameplay
             if (targetTile != null)
             {
                 Console.WriteLine($"Opponent shooting at {targetTile.Name}");
-                MakeShot(targetTile); // Wywołaj logikę strzału
+                MakeShot(targetTile);
+
+                if (targetTile.HitStatus == HitStatus.Miss)
+                {
+                    Console.WriteLine("Opponent missed. Switching to player's turn.");
+                    //TurnManager.Instance.OpponentShot(); // Oznacz strzał przeciwnika
+                    //TurnManager.Instance.SwitchTurn();   // Zmień turę na gracza
+                }
+                else
+                {
+                    TurnManager.Instance.OpponentShot(); // Oznacz strzał przeciwnika
+                    TurnManager.Instance.SwitchTurn();   // Zmień turę na gracza
+                    Console.WriteLine("Opponent hit! Opponent continues their turn.");
+                }
             }
         }
-
-
 
     }
 }

@@ -83,6 +83,12 @@ namespace Statki
                 Background = Brushes.LightGray,
                 Visibility = Visibility.Visible
             };
+
+            // Oblicz dynamiczną szerokość na podstawie największej szerokości statków
+            double maxShipWidth = ships.Any() ? ships.Max(ship => ship.Width * 30 + 10) : 230;
+            leftPanel.Width = maxShipWidth;
+
+            return leftPanel;
         }
 
         private Grid CreateBoardGrid(bool isOpponent)
