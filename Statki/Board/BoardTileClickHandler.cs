@@ -35,20 +35,17 @@ namespace Statki.Board
                 return;
             }
 
-            if (turnManager._isPlayerTurn) // Gracz może strzelać tylko w swojej turze
+            if (turnManager._isPlayerTurn) // Sprawdzamy, czy jest tura gracza
             {
-                if (!turnManager.HasPlayerShot) // Sprawdzamy, czy gracz już strzelał
+                HandlePlayerShot(tile);  // Gracz wykonuje strzał
+                if (tile.HitStatus == HitStatus.Miss)
                 {
-                    HandlePlayerShot(tile);  // Gracz wykonuje strzał
-                    turnManager.HasPlayerShot = true; // Oznaczamy, że gracz wykonał strzał
-
-                    Console.WriteLine("----Player shot------");
-                    turnManager.PlayerShot();
-                    turnManager.SwitchTurn();  // Przełączamy na turę przeciwnika 
+                    Console.WriteLine("Miss! Switching to opponent's turn.");
+                    turnManager.SwitchTurn();
                 }
                 else
                 {
-                    Console.WriteLine("Player has already shot this turn!");
+                    Console.WriteLine("Hit! Player continues their turn.");
                 }
             }
             else
@@ -60,7 +57,6 @@ namespace Statki.Board
             turnManager.Stateofturns();
         }
 
-
         private void HandlePlayerShot(BoardTile tile)
         {
             if (tile.IsOccupied)
@@ -68,6 +64,7 @@ namespace Statki.Board
                 tile.HitStatus = HitStatus.Hit;
                 tile.UpdateTileAppearance();
                 Console.WriteLine($"Hit on {tile.Name}");
+
 
                 if (tile.AssignedShip != null)
                 {
@@ -83,7 +80,10 @@ namespace Statki.Board
                 tile.HitStatus = HitStatus.Miss;
                 tile.UpdateTileAppearance();
                 Console.WriteLine($"Miss on {tile.Name}");
+
             }
+            TurnManager.Instance.Player1AddTurn();
         }
     }
+
 }

@@ -26,8 +26,8 @@ namespace Statki.Gameplay
         private bool _isPlacementPhase = false;
         private bool _isGameOver = false;
 
-        public int _player1Turns {  get; private set; } = 0;
-        public int _player2Turns { get; private set; } = 0;
+        public int _player1Turns {  get; set; } = 0;
+        public int _player2Turns { get;  set; } = 0;
 
         public event Action<int> OnTimerUpdate;
         public event Action OnGameOver; // Zdarzenie końca gry
@@ -210,10 +210,6 @@ namespace Statki.Gameplay
             CheckForWinner();
         }
 
-
-
-
-
         public void Stateofturns()
         {
             Console.WriteLine("""
@@ -260,10 +256,6 @@ namespace Statki.Gameplay
             Stateofturns();
         }
 
-
-
-
-
         private void CheckForWinner()
         {
             Console.WriteLine("Checking winner...");
@@ -282,8 +274,6 @@ namespace Statki.Gameplay
             }
         }
 
-
-
         // Metoda do ustawiania czasu na 3 sekundy po kliknięciu przycisku
         public void SetTimerTo3Seconds()
         {
@@ -295,9 +285,6 @@ namespace Statki.Gameplay
         {
             Console.WriteLine($"Current phase: {(_isPlacementPhase ? "Placement" : "Turn")}");
         }
-
-
-
 
         public static void Initialize(Player player1, Player player2, Button readyButton)
         {
@@ -312,6 +299,11 @@ namespace Statki.Gameplay
                 Instance.InitializeTurnTimer();
                 Console.WriteLine("TurnManager initialized successfully.");
             }
+        }
+
+        public void Player1AddTurn()
+        {
+            _player1Turns++;
         }
 
     }
