@@ -22,6 +22,9 @@ namespace Statki
 
         public event Action<int> OnTimerUpdate;
 
+        private TextBlock playerBoardHeader;
+        private TextBlock opponentBoardHeader;
+        private TextBlock turnIndicatorTextBlock; 
         public MainWindow()
         {
             InitializeComponent();
@@ -38,11 +41,13 @@ namespace Statki
 
         private void CreateLayout()
         {
+            double maxShipWidth = ships.Any() ? ships.Max(ship => ship.Width * 30 + 10) : 230;
+
             // Create main grid
             Grid mainGrid = new Grid();
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(220) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(maxShipWidth) }); 
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
@@ -53,6 +58,31 @@ namespace Statki
             Grid.SetRow(leftPanel, 1);
             mainGrid.Children.Add(leftPanel);
 
+            playerBoardHeader = new TextBlock
+            {
+                Text = "Player Board",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Green,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(playerBoardHeader, 1);
+            Grid.SetRow(playerBoardHeader, 0);
+            mainGrid.Children.Add(playerBoardHeader);
+
+            opponentBoardHeader = new TextBlock
+            {
+                Text = "Opponent Board",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                Foreground = Brushes.Red,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetColumn(opponentBoardHeader, 3);
+            Grid.SetRow(opponentBoardHeader, 0);
+            mainGrid.Children.Add(opponentBoardHeader);
             // Player and Opponent Boards
             gameGrid = CreateBoardGrid(isOpponent: false);
             opponentGrid = CreateBoardGrid(isOpponent: true);
@@ -76,14 +106,20 @@ namespace Statki
 
         private StackPanel CreateLeftPanel()
         {
-            return new StackPanel
+            StackPanel leftPanel = new StackPanel
             {
                 Orientation = Orientation.Vertical,
-                Width = 200,
                 Background = Brushes.LightGray,
                 Visibility = Visibility.Visible
             };
+
+            // Oblicz dynamiczną szerokość na podstawie największej szerokości statków
+            double maxShipWidth = ships.Any() ? ships.Max(ship => ship.Width * 30 + 10) : 230;
+            leftPanel.Width = maxShipWidth;
+
+            return leftPanel;
         }
+
 
         private Grid CreateBoardGrid(bool isOpponent)
         {
@@ -94,6 +130,7 @@ namespace Statki
         private StackPanel CreateTimerPanel()
         {
             StackPanel timerPanel = new StackPanel { Orientation = Orientation.Vertical };
+            // Tekst odliczania czasu
             timerTextBlock = new TextBlock
             {
                 FontSize = 18,
@@ -103,6 +140,18 @@ namespace Statki
             };
             timerPanel.Children.Add(timerTextBlock);
 
+            // Tekst wskaźnika tury
+            turnIndicatorTextBlock = new TextBlock
+            {
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(10)
+            };
+            timerPanel.Children.Add(turnIndicatorTextBlock);
+
+            // Przycisk "Ready"
             readyButton = new Button
             {
                 Content = "Ready",
@@ -157,11 +206,18 @@ namespace Statki
             // Inicjalizacja statków
             ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, ((StackPanel)((Grid)this.Content).Children[0]));
 
-            initializer.CreateShip("Test Ship 1", 5, 1);
-            initializer.CreateShip("Test Ship 2", 4, 1);
-            initializer.CreateShip("Test Ship 3", 3, 1);
-            initializer.CreateShip("Test Ship 4", 2, 1);
-            initializer.CreateShip("Test Ship 5", 1, 1);
+            
+            initializer.CreateShip("Carrier", 6, 1);
+            initializer.CreateShip("Dreadnought", 6, 1);
+            initializer.CreateShip("Battleship", 5, 1);
+            initializer.CreateShip("Cruiser", 4, 1); 
+            initializer.CreateShip("Submarine", 3, 1); 
+            initializer.CreateShip("Destroyer", 3, 1); 
+            initializer.CreateShip("Patrol Boat", 2, 1);
+
+
+            int maxWidth = ships.Any() ? ships.Max(ship => ship.Width * 700): 200; // 30px + marginesy
+            leftPanel.Width =+ maxWidth;
         }
 
         private void AssignShipsToPlayers()
@@ -196,7 +252,6 @@ namespace Statki
             Console.WriteLine($"Player2 ship count: {turnManager.Player2.Ships.Count}");
         }
 
-
         private void TurnManager_OnGameOver()
         {
             string message;
@@ -223,8 +278,6 @@ namespace Statki
                 MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-
 
         private void UpdateTimerText(int remainingTime)
         {
@@ -267,18 +320,28 @@ namespace Statki
                 gameGrid.Effect = null;
                 opponentGrid.Opacity = 1.0;
                 opponentGrid.Effect = null;
+
+                playerBoardHeader.Opacity = 1.0;
+                opponentBoardHeader.Opacity = 1.0;
+
+                turnIndicatorTextBlock.Text = string.Empty; // Brak komunikatu
             }
             else
             {
-                // Wyróżnienie aktywnej planszy
-                gameGrid.Opacity = isPlayerTurn ? 0.5 : 1.0;
+                // Wyróżnienie aktywnej planszy i odpowiedniego nagłówka
+                gameGrid.Opacity = isPlayerTurn ? 0.7 : 1.0;
                 gameGrid.Effect = isPlayerTurn ? new System.Windows.Media.Effects.BlurEffect { Radius = 3 } : null;
-                
-                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.5;
+
+                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.7;
                 opponentGrid.Effect = isPlayerTurn ? null : new System.Windows.Media.Effects.BlurEffect { Radius = 3 };
+
+                playerBoardHeader.Opacity = isPlayerTurn ? 0.3 : 1.0;
+                opponentBoardHeader.Opacity = isPlayerTurn ? 1.0 : 0.3;
+
+                // Zmieniamy tekst wskaźnika tury
+                turnIndicatorTextBlock.Text = isPlayerTurn ? "Your turn, shoot!" : "Wait for your turn.";
+                turnIndicatorTextBlock.Foreground = isPlayerTurn ? Brushes.Green : Brushes.Red;
             }
         }
-
-
     }
 }
