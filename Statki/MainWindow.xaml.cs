@@ -24,7 +24,12 @@ namespace Statki
 
         private TextBlock playerBoardHeader;
         private TextBlock opponentBoardHeader;
-        private TextBlock turnIndicatorTextBlock; 
+        private TextBlock turnIndicatorTextBlock;
+
+        private TextBlock playerScoreTextBlock;
+        private TextBlock opponentScoreTextBlock;
+        private ScoreManager scoreManager;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -47,9 +52,9 @@ namespace Statki
             Grid mainGrid = new Grid();
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(30) });
             mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(maxShipWidth) }); 
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(maxShipWidth) });
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(150) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(200) });
             mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
             // Left Panel for Ships
@@ -130,6 +135,7 @@ namespace Statki
         private StackPanel CreateTimerPanel()
         {
             StackPanel timerPanel = new StackPanel { Orientation = Orientation.Vertical };
+
             // Tekst odliczania czasu
             timerTextBlock = new TextBlock
             {
@@ -139,6 +145,30 @@ namespace Statki
                 Margin = new Thickness(5)
             };
             timerPanel.Children.Add(timerTextBlock);
+
+            // Tekst punktacji gracza
+            playerScoreTextBlock = new TextBlock
+            {
+                Text = "Player SCORE: 0",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5),
+                Foreground = Brushes.Green
+            };
+            timerPanel.Children.Add(playerScoreTextBlock);
+
+            // Tekst punktacji przeciwnika
+            opponentScoreTextBlock = new TextBlock
+            {
+                Text = "Opponent SCORE: 0",
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(5),
+                Foreground = Brushes.Red
+            };
+            timerPanel.Children.Add(opponentScoreTextBlock);
 
             // Tekst wskaźnika tury
             turnIndicatorTextBlock = new TextBlock
@@ -165,6 +195,19 @@ namespace Statki
             return timerPanel;
         }
 
+
+        private void UpdateScoreDisplay()
+        {
+            playerScoreTextBlock.Text = $"Player SCORE: {scoreManager.PlayerScore}";
+            opponentScoreTextBlock.Text = $"Opponent SCORE: {scoreManager.OpponentScore}";
+        }
+
+        public void HandleShot(bool isPlayer, bool isHit, int remainingTime)
+        {
+            scoreManager.RegisterShot(isPlayer, isHit, remainingTime);
+            UpdateScoreDisplay();
+        }
+
         private void InitializePlayersAndTurnManager()
         {
             // Create Player 1 and Opponent, but do not assign the TurnManager yet
@@ -174,6 +217,7 @@ namespace Statki
             // Initialize TurnManager singleton with players and readyButton
             TurnManager.Initialize(player1, opponent, readyButton);
 
+            scoreManager = new ScoreManager();
             // Assign the TurnManager to the players
             player1.TurnManager = TurnManager.Instance;
             opponent.TurnManager = TurnManager.Instance;
@@ -206,18 +250,18 @@ namespace Statki
             // Inicjalizacja statków
             ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, ((StackPanel)((Grid)this.Content).Children[0]));
 
-            
+
             initializer.CreateShip("Carrier", 6, 1);
             initializer.CreateShip("Dreadnought", 6, 1);
             initializer.CreateShip("Battleship", 5, 1);
-            initializer.CreateShip("Cruiser", 4, 1); 
-            initializer.CreateShip("Submarine", 3, 1); 
-            initializer.CreateShip("Destroyer", 3, 1); 
+            initializer.CreateShip("Cruiser", 4, 1);
+            initializer.CreateShip("Submarine", 3, 1);
+            initializer.CreateShip("Destroyer", 3, 1);
             initializer.CreateShip("Patrol Boat", 2, 1);
 
 
-            int maxWidth = ships.Any() ? ships.Max(ship => ship.Width * 700): 200; // 30px + marginesy
-            leftPanel.Width =+ maxWidth;
+            int maxWidth = ships.Any() ? ships.Max(ship => ship.Width * 700) : 200; // 30px + marginesy
+            leftPanel.Width = +maxWidth;
         }
 
         private void AssignShipsToPlayers()
@@ -257,13 +301,19 @@ namespace Statki
             string message;
             string title;
 
+            // Pobieramy punkty gracza i przeciwnika
+            int playerScore = scoreManager.PlayerScore;
+            int opponentScore = scoreManager.OpponentScore;
+
             if (turnManager.Player1.AllShipsSunk())
             {
                 // Opponent wygrał
                 message = "YOU LOSE\n\n";
                 message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
                 message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Twój wynik: {playerScore}\n";
+                message += $"Wynik przeciwnika: {opponentScore}";
                 title = "Game Over";
                 MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -273,11 +323,14 @@ namespace Statki
                 message = "YOU WIN\n\n";
                 message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
                 message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Twój wynik: {playerScore}\n";
+                message += $"Wynik przeciwnika: {opponentScore}";
                 title = "Game Over";
                 MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
 
         private void UpdateTimerText(int remainingTime)
         {

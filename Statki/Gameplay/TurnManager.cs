@@ -16,8 +16,8 @@ namespace Statki.Gameplay
         public Player Player2 { get; set; }
 
         public bool _isPlayerTurn { get; private set; } // Czy tura należy do gracza (true - gracz, false - przeciwnik)
-        public bool HasPlayerShot {  get;  set; } = false;
-        public bool HasOpponentShot { get; private set; } =false;
+        public bool HasPlayerShot { get; set; } = false;
+        public bool HasOpponentShot { get; private set; } = false;
 
         private DispatcherTimer _turnTimer;
         private int _turnTimeRemaining = 20; // 20 sekund na turę
@@ -26,14 +26,14 @@ namespace Statki.Gameplay
         private bool _isPlacementPhase = false;
         private bool _isGameOver = false;
 
-        public int _player1Turns {  get; set; } = 0;
-        public int _player2Turns { get;  set; } = 0;
+        public int _player1Turns { get; set; } = 0;
+        public int _player2Turns { get; set; } = 0;
 
         public event Action<int> OnTimerUpdate;
         public event Action OnGameOver; // Zdarzenie końca gry
 
         private Button readyButton;
-        private int remainingTime;
+        public int remainingTime;
 
         public static TurnManager Instance { get; private set; }
 
@@ -111,11 +111,12 @@ namespace Statki.Gameplay
                 if (_turnTimeRemaining > 0)
                 {
                     _turnTimeRemaining--;
+                    remainingTime = _turnTimeRemaining;
                     OnTimerUpdate?.Invoke(_turnTimeRemaining);
                 }
                 else
                 {
-                    SwitchTurn();  
+                    SwitchTurn();
                 }
             }
         }
@@ -256,7 +257,7 @@ namespace Statki.Gameplay
             Stateofturns();
         }
 
-        private void CheckForWinner()
+        public void CheckForWinner()
         {
             Console.WriteLine("Checking winner...");
 
@@ -308,4 +309,3 @@ namespace Statki.Gameplay
 
     }
 }
-

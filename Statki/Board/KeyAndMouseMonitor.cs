@@ -67,6 +67,7 @@ namespace Statki.Board
 
         private void RotateShip(Ship ship)
         {
+       
             ship.Rotate();
             Console.WriteLine("R Wcisniete");
 

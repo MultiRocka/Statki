@@ -1,5 +1,6 @@
 ﻿using Statki.Gameplay;
 using System;
+using System.Windows;
 
 namespace Statki.Board
 {
@@ -46,6 +47,12 @@ namespace Statki.Board
                 else
                 {
                     Console.WriteLine("Hit! Player continues their turn.");
+                    int remainingTime = TurnManager.Instance.remainingTime;
+
+                    MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
+                    mainWindow.HandleShot(true, true, remainingTime);
+
+                    turnManager.CheckForWinner();
                 }
             }
             else

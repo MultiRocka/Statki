@@ -32,7 +32,8 @@ namespace Statki.Board
         {
             this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
-
+            //this.MouseEnter += BoardTile_MouseEnter;
+            //this.MouseLeave += BoardTile_MouseLeave;
             this.Style = CreateCustomStyle();
         }
         private Style CreateCustomStyle()

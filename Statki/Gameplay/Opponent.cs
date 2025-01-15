@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Statki.Board;
 using Statki.Class;
+using System.Windows;
 
 namespace Statki.Gameplay
 {
@@ -36,6 +37,13 @@ namespace Statki.Gameplay
                 targetTile.HitStatus = HitStatus.Hit;
                 Console.WriteLine($"Hit on {targetTile.Name}");
                 targetTile.UpdateTileAppearance();
+
+                int remainingTime = TurnManager.Instance.remainingTime;
+
+                MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
+                mainWindow.HandleShot(false, true, remainingTime);
+
+                TurnManager.Instance.CheckForWinner();
 
                 if (targetTile.AssignedShip != null)
                 {
