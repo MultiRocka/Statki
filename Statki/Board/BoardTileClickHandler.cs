@@ -6,8 +6,12 @@ namespace Statki.Board
 {
     public class BoardTileClickHandler
     {
+
+
         public void HandleTileClick(BoardTile tile)
         {
+
+
             Console.WriteLine("Tile clicked! ", tile.Name);
 
             if (tile == null)
@@ -43,14 +47,23 @@ namespace Statki.Board
                 {
                     Console.WriteLine("Miss! Switching to opponent's turn.");
                     turnManager.SwitchTurn();
+
+                    int remainingTime = TurnManager.Instance.remainingTime;
+                    MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
+                    mainWindow.HandleShot(true, false, remainingTime);
                 }
                 else
                 {
                     Console.WriteLine("Hit! Player continues their turn.");
-                    int remainingTime = TurnManager.Instance.remainingTime;
 
+                    int remainingTime = TurnManager.Instance.remainingTime;
                     MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
                     mainWindow.HandleShot(true, true, remainingTime);
+
+                    int points = MainWindow.scoreManager.savedPoints;
+                    int multiplier = MainWindow.scoreManager.savedMultiplier;
+
+                    tile.DisplayPointsAnimation(points, multiplier);
 
                     turnManager.CheckForWinner();
                 }

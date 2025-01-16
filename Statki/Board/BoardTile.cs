@@ -4,6 +4,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 
 namespace Statki.Board
@@ -35,6 +36,7 @@ namespace Statki.Board
             //this.MouseEnter += BoardTile_MouseEnter;
             //this.MouseLeave += BoardTile_MouseLeave;
             this.Style = CreateCustomStyle();
+            
         }
         private Style CreateCustomStyle()
         {
@@ -85,6 +87,7 @@ namespace Statki.Board
             {
                 var handler = new BoardTileClickHandler();
                 handler.HandleTileClick(tile);
+
             }
         }
 
@@ -161,6 +164,71 @@ namespace Statki.Board
                 }
             }
         }
+
+
+        public void DisplayPointsAnimation(int points, double multiplier)
+        {
+            // Tworzenie tekstu
+            TextBlock pointsText = new TextBlock
+            {
+                Text = $"+{points} x{multiplier}",
+                Foreground = Brushes.Gold,
+                FontSize = 12,
+                FontWeight = FontWeights.Bold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            // Dodanie do nadrzędnego kontenera (ParentGrid)
+            ParentGrid.Children.Add(pointsText);
+
+            // Ustawienie pozycji na podstawie pozycji BoardTile w siatce
+            Grid.SetRow(pointsText, Row);
+            Grid.SetColumn(pointsText, Column);
+
+            // Tworzymy transformację dla przesunięcia
+            TranslateTransform translate = new TranslateTransform();
+            pointsText.RenderTransform = translate;
+
+            // Tworzenie animacji przesunięcia w górę
+            DoubleAnimation moveUp = new DoubleAnimation
+            {
+                From = 0,
+                To = -30,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+
+            // Tworzenie animacji zanikania
+            DoubleAnimation fadeOut = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = TimeSpan.FromSeconds(1),
+                BeginTime = TimeSpan.FromMilliseconds(500)
+            };
+
+            // Tworzenie storyboardu
+            Storyboard storyboard = new Storyboard();
+            storyboard.Children.Add(moveUp);
+            storyboard.Children.Add(fadeOut);
+
+            Storyboard.SetTarget(moveUp, pointsText);
+            Storyboard.SetTarget(fadeOut, pointsText);
+            Storyboard.SetTargetProperty(moveUp, new PropertyPath("(UIElement.RenderTransform).(TranslateTransform.Y)"));
+            Storyboard.SetTargetProperty(fadeOut, new PropertyPath(UIElement.OpacityProperty));
+
+            // Usunięcie elementu po zakończeniu animacji
+            storyboard.Completed += (s, e) =>
+            {
+                ParentGrid.Children.Remove(pointsText);  // Usuwamy tekst po animacji
+            };
+
+            // Uruchomienie animacji
+            storyboard.Begin();
+        }
+
+
+
 
     }
 }

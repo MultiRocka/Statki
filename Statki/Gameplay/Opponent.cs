@@ -13,6 +13,7 @@ namespace Statki.Gameplay
         private List<(int Row, int Col)> AvailableShots;
         private BoardTileClickHandler _clickHandler;
 
+
         public Opponent(string name, Grid board) : base(name, board, TurnManager.Instance) // Pass TurnManager to the base class constructor
         {
             InitializeAvailableShots();
@@ -39,9 +40,13 @@ namespace Statki.Gameplay
                 targetTile.UpdateTileAppearance();
 
                 int remainingTime = TurnManager.Instance.remainingTime;
-
                 MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
                 mainWindow.HandleShot(false, true, remainingTime);
+
+                int points = MainWindow.scoreManager.savedPoints;
+                int multiplier = MainWindow.scoreManager.savedMultiplier;
+
+                targetTile.DisplayPointsAnimation(points, multiplier);
 
                 TurnManager.Instance.CheckForWinner();
 
@@ -58,6 +63,11 @@ namespace Statki.Gameplay
             {
                 targetTile.HitStatus = HitStatus.Miss;
                 Console.WriteLine($"Miss on {targetTile.Name}");
+
+                int remainingTime = TurnManager.Instance.remainingTime;
+                MainWindow? mainWindow = Application.Current.MainWindow as MainWindow;
+                mainWindow.HandleShot(false, false, remainingTime);
+
                 targetTile.UpdateTileAppearance();
             }
         }
