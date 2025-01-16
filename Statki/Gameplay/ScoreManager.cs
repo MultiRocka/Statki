@@ -11,8 +11,12 @@ namespace Statki.Gameplay
         public int PlayerScore { get; private set; }
         public int OpponentScore { get; private set; }
 
-        private int _playerComboCount;
-        private int _opponentComboCount;
+        public int _playerComboCount;
+        public int _opponentComboCount;
+        public int points;
+
+        public int savedPoints {  get; private set; }
+        public int savedMultiplier {  get; private set; }
 
         public void RegisterShot(bool isPlayer, bool isHit, int remainingTime)
         {
@@ -20,11 +24,14 @@ namespace Statki.Gameplay
             {
                 int basePoints = remainingTime * 100;
                 int comboMultiplier = isPlayer ? ++_playerComboCount : ++_opponentComboCount; // Zwiększamy combo
-                int points = basePoints * comboMultiplier;
+                points = basePoints * comboMultiplier;
+
+                savedPoints = points;
+                savedMultiplier = comboMultiplier;
 
                 AddPoints(isPlayer, points);
                 Console.WriteLine($"REMAINING TIME:{remainingTime}");
-
+                
                 Console.WriteLine($"{(isPlayer ? "Player" : "Opponent")} hit! Combo: {comboMultiplier}, Points: {points}");
             }
             else

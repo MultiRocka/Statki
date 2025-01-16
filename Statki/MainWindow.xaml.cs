@@ -28,7 +28,8 @@ namespace Statki
 
         private TextBlock playerScoreTextBlock;
         private TextBlock opponentScoreTextBlock;
-        private ScoreManager scoreManager;
+
+        public static ScoreManager scoreManager;
 
         public MainWindow()
         {
@@ -382,19 +383,21 @@ namespace Statki
             else
             {
                 // Wyróżnienie aktywnej planszy i odpowiedniego nagłówka
-                gameGrid.Opacity = isPlayerTurn ? 0.7 : 1.0;
+                gameGrid.Opacity = isPlayerTurn ? 0.5 : 1.0;
                 gameGrid.Effect = isPlayerTurn ? new System.Windows.Media.Effects.BlurEffect { Radius = 3 } : null;
 
-                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.7;
+                opponentGrid.Opacity = isPlayerTurn ? 1.0 : 0.5;
                 opponentGrid.Effect = isPlayerTurn ? null : new System.Windows.Media.Effects.BlurEffect { Radius = 3 };
 
-                playerBoardHeader.Opacity = isPlayerTurn ? 0.3 : 1.0;
-                opponentBoardHeader.Opacity = isPlayerTurn ? 1.0 : 0.3;
+                playerBoardHeader.Opacity = isPlayerTurn ? 0.5 : 1.0;
+                opponentBoardHeader.Opacity = isPlayerTurn ? 1.0 : 0.5;
 
                 // Zmieniamy tekst wskaźnika tury
                 turnIndicatorTextBlock.Text = isPlayerTurn ? "Your turn, shoot!" : "Wait for your turn.";
                 turnIndicatorTextBlock.Foreground = isPlayerTurn ? Brushes.Green : Brushes.Red;
             }
         }
+
+
     }
 }
