@@ -20,6 +20,7 @@ namespace Statki.Gameplay
         public bool HasOpponentShot { get; private set; } = false;
 
         private DispatcherTimer _turnTimer;
+
         private int _turnTimeRemaining = 20; // 20 sekund na turę
         private int _shipPlacementTimeRemaining = 30; // 30 sekund na rozłożenie statków
 
@@ -67,7 +68,10 @@ namespace Statki.Gameplay
         {
             _turnTimer.Start();
             _shipPlacementTimeRemaining = 30;
+
             remainingTime = _shipPlacementTimeRemaining;
+            _turnTimeRemaining = remainingTime;
+
             OnTimerUpdate?.Invoke(remainingTime);
             Console.WriteLine("Placement Phase Started");
             _isPlacementPhase = true;  // Upewnij się, że faza rozmieszczania jest ustawiona na true
@@ -144,8 +148,7 @@ namespace Statki.Gameplay
         public void StartTurnPhase()
         {
             // Rozpoczynamy fazę tur
-            _isPlayerTurn = _random.Next(2) == 0; // Losowanie, kto zaczyna turę
-            _isPlayerTurn = false;
+            _isPlayerTurn = _random.Next(2) == 0;
             Console.WriteLine(_isPlayerTurn ? "Player 1 starts!" : "Player 2 starts!");
             if (_isPlayerTurn) OpponentShot(); else PlayerShot();
             _turnTimeRemaining = 20; // Resetujemy czas na turę
@@ -276,7 +279,7 @@ namespace Statki.Gameplay
         }
 
         // Metoda do ustawiania czasu na 3 sekundy po kliknięciu przycisku
-        public void SetTimerTo3Seconds()
+        public void SetTimerTo1Seconds()
         {
             remainingTime = 1;
             OnTimerUpdate?.Invoke(remainingTime);
@@ -305,6 +308,30 @@ namespace Statki.Gameplay
         public void Player1AddTurn()
         {
             _player1Turns++;
+        }
+
+        public void Reset()
+        {
+            _isPlayerTurn = new Random().Next(0, 2) == 0;
+            _isGameOver = false;
+            _isPlacementPhase = false;
+
+            _player1Turns = 0;
+            _player2Turns = 0;
+            OnGameOver = null;
+            OnTimerUpdate = null;
+
+            ResetTimer();
+            Start();
+        }
+
+        public void ResetTimer()
+        {
+            _turnTimer.Stop();
+            _turnTimeRemaining = 20; // Przywróć czas tury do domyślnej wartości
+            _shipPlacementTimeRemaining = 30;
+            remainingTime = _turnTimeRemaining;
+            OnTimerUpdate?.Invoke(_turnTimeRemaining);
         }
 
     }

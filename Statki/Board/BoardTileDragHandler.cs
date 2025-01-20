@@ -122,7 +122,6 @@ namespace Statki.Board
             }
         }
 
-
         public void HighlightTiles(BoardTile startTile, Ship ship, Brush highlightColor, bool temporary)
         {
             if (startTile == null) return;

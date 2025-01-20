@@ -50,7 +50,11 @@ namespace Statki.Gameplay
             else
                 _opponentComboCount = 0;
         }
-
+        public void ResetScores()
+        {
+            PlayerScore = 0;
+            OpponentScore = 0;
+        }
         private void AddPoints(bool isPlayer, int points)
         {
             if (isPlayer)
