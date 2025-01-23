@@ -21,7 +21,7 @@ namespace Statki
         private Button readyButton;
 
         public event Action<int> OnTimerUpdate;
-
+         
         private TextBlock playerBoardHeader;
         private TextBlock opponentBoardHeader;
         private TextBlock turnIndicatorTextBlock;
@@ -31,12 +31,18 @@ namespace Statki
 
         public static ScoreManager scoreManager;
 
+        private readonly Statki.Database.DatabaseManager _databaseManager = new Statki.Database.DatabaseManager();
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _databaseManager.InitializeDatabase();
+
             CreateLayout();
             CreateShips();
             InitializePlayersAndTurnManager();
+          
 
             MinHeight = 600;
             MinWidth = 1200;
@@ -126,7 +132,6 @@ namespace Statki
             return leftPanel;
         }
 
-
         private Grid CreateBoardGrid(bool isOpponent)
         {
             boardGridCreator = new BoardGridCreator();
@@ -196,7 +201,6 @@ namespace Statki
             return timerPanel;
         }
 
-
         private void UpdateScoreDisplay()
         {
             playerScoreTextBlock.Text = $"Player SCORE: {scoreManager.PlayerScore}";
@@ -251,7 +255,6 @@ namespace Statki
             // Inicjalizacja statków
             ShipInitializer initializer = new ShipInitializer(shipDragHandler, ships, ((StackPanel)((Grid)this.Content).Children[0]));
 
-
             initializer.CreateShip("Carrier", 6, 1);
             initializer.CreateShip("Dreadnought", 6, 1);
             initializer.CreateShip("Battleship", 5, 1);
@@ -259,7 +262,6 @@ namespace Statki
             initializer.CreateShip("Submarine", 3, 1);
             initializer.CreateShip("Destroyer", 3, 1);
             initializer.CreateShip("Patrol Boat", 2, 1);
-
 
             int maxWidth = ships.Any() ? ships.Max(ship => ship.Width * 700) : 200; // 30px + marginesy
             leftPanel.Width = +maxWidth;
@@ -270,14 +272,21 @@ namespace Statki
             // Przypisujemy statki graczowi 1
             foreach (var ship in ships)
             {
-                turnManager.Player1.Ships.Add(ship);
+                if (!turnManager.Player1.Ships.Any(s => s.Name == ship.Name))
+                {
+                    turnManager.Player1.Ships.Add(ship);
+                }
             }
 
             // Tworzymy kopie statków dla przeciwnika
             foreach (var ship in ships)
             {
-                var opponentShip = new Ship(ship.Name + " (Opponent)", ship.Length, ship.Width);
-                turnManager.Player2.Ships.Add(opponentShip);
+                // Sprawdzamy, czy statek o tej samej nazwie już istnieje w liście przeciwnika
+                if (!turnManager.Player2.Ships.Any(s => s.Name == ship.Name + " (Opponent)"))
+                {
+                    var opponentShip = new Ship(ship.Name + " (Opponent)", ship.Length, ship.Width);
+                    turnManager.Player2.Ships.Add(opponentShip);
+                }
             }
 
             // Wypisanie stanu statków gracza 1
@@ -297,41 +306,45 @@ namespace Statki
             Console.WriteLine($"Player2 ship count: {turnManager.Player2.Ships.Count}");
         }
 
-        private void TurnManager_OnGameOver()
+        private void ResetGame()
         {
-            string message;
-            string title;
+            gameGrid.Opacity = 1.0;
+            opponentGrid.Opacity = 1.0;
+            gameGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
+            opponentGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
 
-            // Pobieramy punkty gracza i przeciwnika
-            int playerScore = scoreManager.PlayerScore;
-            int opponentScore = scoreManager.OpponentScore;
+            turnIndicatorTextBlock.Text = string.Empty;
 
-            if (turnManager.Player1.AllShipsSunk())
+            // Wyczyść plansze
+            boardGridCreator.ClearBoard(gameGrid);
+            boardGridCreator.ClearBoard(opponentGrid);
+
+            // Reset punktów
+            scoreManager.ResetScores();
+            UpdateScoreDisplay();
+
+            foreach (var ship in turnManager.Player1.Ships)
             {
-                // Opponent wygrał
-                message = "YOU LOSE\n\n";
-                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Twój wynik: {playerScore}\n";
-                message += $"Wynik przeciwnika: {opponentScore}";
-                title = "Game Over";
-                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Error);
+                ship.ResetState();
             }
-            else if (turnManager.Player2.AllShipsSunk())
-            {
-                // Player1 wygrał
-                message = "YOU WIN\n\n";
-                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Twój wynik: {playerScore}\n";
-                message += $"Wynik przeciwnika: {opponentScore}";
-                title = "Game Over";
-                MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
-            }
+
+            turnManager.Player1.Ships.Clear();
+            turnManager.Player2.Ships.Clear();
+            turnManager.Reset();
+
+            // Reset panelu lewego
+            StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+            leftPanel.Width = ships.Any() ? ships.Max(ship => ship.Width * 230 + 10) : 230;
+
+            // Przywróć widoczność przycisku "Ready" i lewego panelu
+            readyButton.Visibility = Visibility.Visible;
+            leftPanel.Visibility = Visibility.Visible;
+
+            Grid mainGrid = (Grid)this.Content;
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(leftPanel.Width);
+
+            InitializePlayersAndTurnManager();
         }
-
 
         private void UpdateTimerText(int remainingTime)
         {
@@ -362,7 +375,7 @@ namespace Statki
             Grid mainGrid = (Grid)this.Content;
             mainGrid.ColumnDefinitions[0].Width = new GridLength(0);
 
-            turnManager.SetTimerTo3Seconds();
+            turnManager.SetTimerTo1Seconds();
         }
 
         public void HighlightBoard(bool isPlayerTurn, bool actionCompleted)
@@ -399,5 +412,55 @@ namespace Statki
         }
 
 
+
+        private void TurnManager_OnGameOver()
+        {
+            // Domyślne wartości zmiennych
+            string message = "Nieoczekiwany wynik gry.";
+            string title = "Game Over";
+
+            // Pobieramy punkty gracza i przeciwnika
+            int playerScore = scoreManager.PlayerScore;
+            int opponentScore = scoreManager.OpponentScore;
+
+            // Zmiana przejrzystości plansz
+            gameGrid.Opacity = 0.2;
+            opponentGrid.Opacity = 0.2;
+
+            if (turnManager.Player1.AllShipsSunk())
+            {
+                // Opponent wygrał
+                message = "YOU LOSE\n\n";
+                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
+                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Twój wynik: {playerScore}\n";
+                message += $"Wynik przeciwnika: {opponentScore}";
+                title = "Game Over";
+            }
+            else if (turnManager.Player2.AllShipsSunk())
+            {
+                // Player1 wygrał
+                message = "YOU WIN\n\n";
+                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
+                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
+                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Twój wynik: {playerScore}\n";
+                message += $"Wynik przeciwnika: {opponentScore}";
+                title = "Game Over";
+            }
+
+            // Wyświetlamy okno z przyciskiem "Zagraj ponownie"
+            MessageBoxResult result = MessageBox.Show($"{message}\n\nCzy chcesz zagrać ponownie?", title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                ResetGame();
+            }
+            else
+            {
+                Application.Current.Shutdown();
+            }
+        }
     }
 }

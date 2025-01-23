@@ -91,7 +91,6 @@ namespace Statki.Board
             }
         }
 
-
         private void BoardTile_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (HitStatus == HitStatus.None)
@@ -114,8 +113,10 @@ namespace Statki.Board
         {
             IsOccupied = false;
             HitStatus = HitStatus.None;
-            this.Background = DefaultBackground;
+            AssignedShip = null; // Resetowanie przypisanego statku
+            this.Background = DefaultBackground;  // Ustawienie domyślnego tła
         }
+
 
         // Opcjonalnie: metoda do ustawiania tekstury lub animacji
         public void SetBackgroundImage(ImageSource image)
@@ -226,9 +227,5 @@ namespace Statki.Board
             // Uruchomienie animacji
             storyboard.Begin();
         }
-
-
-
-
     }
 }

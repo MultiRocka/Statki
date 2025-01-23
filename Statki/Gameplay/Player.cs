@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Shapes;
 using Statki.Board;
 using Statki.Class;
 
@@ -43,8 +44,6 @@ namespace Statki.Gameplay
             }
         }
 
-
-
         public virtual void MakeShot(BoardTile targetTile)
         {
             if (TurnManager._isPlayerTurn && !TurnManager.HasPlayerShot)
@@ -56,7 +55,6 @@ namespace Statki.Gameplay
                 }
             }
         }
-
 
         public void PlaceShipsRandomly()
         {
@@ -143,9 +141,6 @@ namespace Statki.Gameplay
             }
         }
 
-
-
-
         private bool CanPlaceShip(Grid board, int startRow, int startCol, Ship ship, bool isHorizontal)
         {
             for (int i = 0; i < ship.Length; i++)
@@ -219,9 +214,6 @@ namespace Statki.Gameplay
             return Ships.All(ship => ship != null && ship.IsSunk);
         }
 
-
-
-
         public Ship GetShipAtPosition(int row, int col)
         {
             // Sprawdzamy, czy w danej pozycji znajduje się statek
@@ -248,9 +240,13 @@ namespace Statki.Gameplay
                 }
                 return true; // Wszystkie statki mają przypisane zajęte pola
          }
-        public bool CheckIfAllShipsSunk()
+
+        public void ResetShipsState()
         {
-            return Ships.All(ship => ship.IsSunk);
+            foreach (var ship in Ships)
+            {
+                ship.ResetState();
+            }
         }
 
     }

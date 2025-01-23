@@ -88,5 +88,17 @@ namespace Statki.Board
 
             return boardGrid;
         }
+
+        public void ClearBoard(Grid board)
+        {
+            foreach (var child in board.Children)
+            {
+                if (child is BoardTile tile)
+                {
+                    // Resetowanie każdego BoardTile
+                    tile.Reset();  // Użycie metody resetującej z BoardTile
+                }
+            }
+        }
     }
 }

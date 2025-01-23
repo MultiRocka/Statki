@@ -17,7 +17,6 @@ namespace Statki.Board
         private readonly Grid _gameGrid;
         public KeyAndMouseMonitor()
         {
-
             keyCheckTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(125) // Częstotliwość sprawdzania klawiszy

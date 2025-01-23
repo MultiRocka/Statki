@@ -189,6 +189,14 @@ namespace Statki.Class
             }
         }
 
+        public void ResetState()
+        {
+            IsPlaced = false;
+            IsSunk = false;
+            OccupiedTiles.Clear();
+            PreviousOccupiedTiles.Clear();
+            Console.WriteLine($"{Name} state has been reset.");
+        }
 
     }
 }
