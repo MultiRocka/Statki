@@ -31,9 +31,14 @@ namespace Statki
 
         public static ScoreManager scoreManager;
 
+        private readonly Statki.Database.DatabaseManager _databaseManager = new Statki.Database.DatabaseManager();
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _databaseManager.InitializeDatabase();
+
             CreateLayout();
             CreateShips();
             InitializePlayersAndTurnManager();
