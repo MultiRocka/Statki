@@ -48,7 +48,6 @@ namespace Statki
             CreateShips();
             InitializePlayersAndTurnManager();
 
-
             MinHeight = 600;
             MinWidth = 1200;
 

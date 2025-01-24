@@ -104,11 +104,9 @@ namespace Statki.Gameplay
                             }
                         }
                     }
-
                 }
             }
         
-
             // Po rozmieszczeniu wszystkich statków, zaktualizuj wygląd wszystkich kafelków
             foreach (var child in Board.Children)
             {

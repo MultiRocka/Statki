@@ -27,7 +27,6 @@ namespace Statki.Board
             {
                 _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
-
                 
                 Console.WriteLine("Działa to: " + _heldShip.Name);
             }
@@ -117,8 +116,6 @@ namespace Statki.Board
                 {
                     Console.WriteLine(occupiedTile.Name);
                 }
-
-
             }
         }
 
@@ -243,8 +240,6 @@ namespace Statki.Board
             }
             ship.OccupiedTiles.Clear(); // Czyścimy listę aktualnych zajętych pól
             ship.OccupiedTiles.AddRange(ship.PreviousOccupiedTiles);
-
         }
-
     }
 }

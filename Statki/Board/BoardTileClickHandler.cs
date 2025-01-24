@@ -6,12 +6,8 @@ namespace Statki.Board
 {
     public class BoardTileClickHandler
     {
-
-
         public void HandleTileClick(BoardTile tile)
         {
-
-
             Console.WriteLine("Tile clicked! ", tile.Name);
 
             if (tile == null)
@@ -84,7 +80,6 @@ namespace Statki.Board
                 tile.HitStatus = HitStatus.Hit;
                 tile.UpdateTileAppearance();
                 Console.WriteLine($"Hit on {tile.Name}");
-
 
                 if (tile.AssignedShip != null)
                 {
