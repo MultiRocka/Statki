@@ -72,8 +72,6 @@ namespace Statki.Gameplay
             }
         }
 
-
-
         // Inicjalizacja dostępnych strzałów
         private void InitializeAvailableShots()
         {
@@ -110,8 +108,6 @@ namespace Statki.Gameplay
                 if (targetTile.HitStatus == HitStatus.Miss)
                 {
                     Console.WriteLine("Opponent missed. Switching to player's turn.");
-                    //TurnManager.Instance.OpponentShot(); // Oznacz strzał przeciwnika
-                    //TurnManager.Instance.SwitchTurn();   // Zmień turę na gracza
                 }
                 else
                 {

@@ -142,7 +142,6 @@ namespace Statki.Gameplay
             {
                 ship.PrintState();
             }
-
         }
 
         public void StartTurnPhase()
@@ -154,6 +153,8 @@ namespace Statki.Gameplay
             _turnTimeRemaining = 20; // Resetujemy czas na turę
             _turnTimer.Start();
             SwitchTurn();
+
+            remainingTime = _turnTimeRemaining;
 
             Application.Current.Dispatcher.Invoke(() =>
             {

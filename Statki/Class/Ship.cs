@@ -91,50 +91,6 @@ namespace Statki.Class
 
             return stackPanel;
         }
-        public void UpdateOccupiedTiles(int startRow, int startCol, Grid gameGrid)
-        {
-            OccupiedTiles.Clear();
-            Console.WriteLine($"Updating tiles for {Name} starting at ({startRow}, {startCol})");
-
-            for (int i = 0; i < Length; i++)
-            {
-                for (int j = 0; j < Width; j++)
-                {
-                    int row = IsHorizontal ? startRow : startRow + j;
-                    int col = IsHorizontal ? startCol + i : startCol;
-
-                    if (row < 0 || col < 0 || row >= gameGrid.RowDefinitions.Count || col >= gameGrid.ColumnDefinitions.Count)
-                    {
-                        Console.WriteLine($"Tile ({row}, {col}) is out of bounds for {Name}.");
-                        continue;
-                    }
-
-                    BoardTile gridTile = GetTileAtPosition(row, col, gameGrid);
-                    if (gridTile != null)
-                    {
-                        OccupiedTiles.Add(gridTile);
-                        Console.WriteLine($"Added tile {gridTile.Name} to {Name}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Tile ({row}, {col}) not found in game grid.");
-                    }
-                }
-            }
-        }
-
-        private BoardTile GetTileAtPosition(int row, int col, Grid gameGrid)
-        {
-            foreach (var child in gameGrid.Children)
-            {
-                if (child is BoardTile tile && Grid.GetRow(tile) == row && Grid.GetColumn(tile) == col)
-                {
-                    return tile;
-                }
-            }
-            return null;
-        }
-
         public void Rotate()
         {
             int temp = Length;

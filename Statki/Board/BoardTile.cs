@@ -132,7 +132,7 @@ namespace Statki.Board
                 this.Background = Brushes.Blue;
         }
 
-        public void UpdateTileAppearance()
+        public async void UpdateTileAppearance()
         {
             // Jeśli kafelek jest zajęty przez statek i nie był jeszcze trafiony
             if (IsOccupied && HitStatus == HitStatus.None && IsOpponent ==false)
@@ -145,7 +145,8 @@ namespace Statki.Board
                 // Jeśli statek jest zatopiony, ustaw kolor na czarny
                 if (AssignedShip != null && AssignedShip.IsSunk)
                 {
-                    this.Background = Brushes.Black;
+                    // Uruchomienie animacji zatopienia dla wszystkich kafelków statku
+                    await AnimateSinking(AssignedShip.OccupiedTiles, TimeSpan.FromMilliseconds(75));
                 }
                 else
                 {
@@ -166,6 +167,14 @@ namespace Statki.Board
             }
         }
 
+        public async Task AnimateSinking(IEnumerable<BoardTile> tiles, TimeSpan delay)
+        {
+            foreach (var tile in tiles)
+            {
+                tile.Background = Brushes.Black; // Zmiana koloru na czarny
+                await Task.Delay(delay);        // Oczekiwanie przed zmianą kolejnego kafelka
+            }
+        }
 
         public void DisplayPointsAnimation(int points, double multiplier)
         {

@@ -30,7 +30,6 @@ namespace Statki.Board
             {
                 startPoint = e.GetPosition(Application.Current.MainWindow);
                 currentlyDraggingShip = ship; // Ustawienie przeciąganego statku
-
             }
         }
 
@@ -56,8 +55,6 @@ namespace Statki.Board
             }
         }
 
-
-
         public void ShipPanel_MouseUp(object sender, MouseButtonEventArgs e)
         {
             currentlyDraggingShip = null; // Resetuje przeciąganie po puszczeniu przycisku myszy
@@ -66,10 +63,8 @@ namespace Statki.Board
 
         private void RotateShip(Ship ship)
         {
-       
             ship.Rotate();
             Console.WriteLine("R Wcisniete");
-
         }
 
     }
