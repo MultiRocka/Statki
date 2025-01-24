@@ -8,7 +8,7 @@ namespace Statki.Profile_Managment
     public partial class LoginWindow : Window
     {
         private readonly DatabaseManager _databaseManager;
-
+        private const string SessionFilePath = "user_session.txt";
         public LoginWindow()
         {
             InitializeComponent();
@@ -38,6 +38,8 @@ namespace Statki.Profile_Managment
             string loginOrEmail = LoginTextBox.Text.Trim();
             string password = PasswordBox.Password.Trim();
 
+            
+
             // Walidacja danych wejściowych
             if (string.IsNullOrEmpty(loginOrEmail))
             {
@@ -58,6 +60,8 @@ namespace Statki.Profile_Managment
                 // Sprawdzanie, czy użytkownik istnieje (logowanie przez login lub email)
                 var user = _databaseManager.GetUserByLoginOrEmail(loginOrEmail);
 
+                Console.WriteLine($"Elo tu masz id usera w login: {user.Id}, {user.Email}, {user.Login}, {user.PasswordHash}, {user.CreatedAt}, {user.UpdatedAt}");
+
                 if (user == null)
                 {
                     LoginErrorLabel.Content = $"Użytkownik z loginem lub emailem '{loginOrEmail}' nie istnieje.";
@@ -70,6 +74,16 @@ namespace Statki.Profile_Managment
 
                 if (isPasswordValid)
                 {
+                    // Generowanie unikalnego tokenu sesji
+                    string sessionToken = TokenGenerator.GenerateSessionToken(user.Id);
+                    DateTime expiresAt = DateTime.UtcNow.AddHours(2);
+
+                    // Zapisanie tokenu w bazie danych
+                    _databaseManager.SaveSessionToken(user.Id, sessionToken, expiresAt);
+
+                    // Zapisanie tokenu w pliku na komputerze użytkownika
+                    SessionManager.SetSessionToken(sessionToken);
+
                     // Zapisanie zalogowanego użytkownika w SessionManager
                     SessionManager.SetLoggedInUser(user.Login);
 
