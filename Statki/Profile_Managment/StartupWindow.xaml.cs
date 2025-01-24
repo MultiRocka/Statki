@@ -12,40 +12,49 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.IO;
 
 namespace Statki.Profile_Managment
 {
-    /// <summary>
-    /// Interaction logic for StartupWindow.xaml
-    /// </summary>
+
     public partial class StartupWindow : Window
     {
         private readonly DatabaseManager _databaseManager;
         private string _loggedInUser;
 
+        private string _sessionToken;
+        private const string SessionFilePath = "session_token.txt"; // Ścieżka do pliku z tokenem
+
         public StartupWindow()
         {
             InitializeComponent();
             _databaseManager = new DatabaseManager();
-            CheckLoginStatus();
+            _databaseManager.InitializeDatabase();
+
+            CheckSessionToken();
         }
 
-        private void CheckLoginStatus()
+        private void CheckSessionToken()
         {
-            // Sprawdź, czy ktoś jest zalogowany (np. przechowując login w pamięci)
-            _loggedInUser = SessionManager.GetLoggedInUser(); // Załóżmy, że jest metoda do zarządzania sesją
+            _sessionToken = SessionManager.GetSessionToken();
 
-            if (string.IsNullOrEmpty(_loggedInUser))
+            if (!string.IsNullOrEmpty(_sessionToken))
             {
-                WelcomeText.Text = "You are not logged in.";
-                ActionButton.Content = "Log In";
+                var user = _databaseManager.GetUserBySessionToken(_sessionToken);
+                if (user != null)
+                {
+                    _loggedInUser = user.Login;
+                    WelcomeText.Text = $"Welcome {_loggedInUser} in Statki Game!";
+                    ActionButton.Content = "Start Game";
+                    EditProfileButton.Visibility = Visibility.Visible;
+                    LogoutButton.Visibility = Visibility.Visible;
+                    return;
+                }
             }
-            else
-            {
-                WelcomeText.Text = $"Welcome {_loggedInUser} in Statki Game!";
-                ActionButton.Content = "Start Game";
-                EditProfileButton.Visibility = Visibility.Visible;
-            }
+
+            WelcomeText.Text = "You are not logged in.";
+            ActionButton.Content = "Log In";
+            _loggedInUser = null;
         }
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
@@ -74,5 +83,22 @@ namespace Statki.Profile_Managment
             profileWindow.Show();
             this.Close();
         }
+
+        private void LogoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Usuń token z menedżera sesji i z pliku
+            SessionManager.ClearSession();
+
+            if (File.Exists(SessionFilePath))
+            {
+                File.Delete(SessionFilePath);
+            }
+
+            // Przejdź do okna logowania
+            var loginWindow = new LoginWindow();
+            loginWindow.Show();
+            this.Close();
+        }
+
     }
 }

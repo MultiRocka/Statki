@@ -4,6 +4,7 @@
          Title="Startup" Height="400" Width="400" WindowStartupLocation="CenterScreen" 
          Background="#1E1E2F">
     <Grid Margin="10">
+
         <!-- Title Section -->
         <TextBlock Name="WelcomeText" 
                    FontSize="24" 
@@ -11,8 +12,26 @@
                    Foreground="White" 
                    HorizontalAlignment="Center" 
                    VerticalAlignment="Top" 
-                   Margin="0,20,0,40"
+                   Margin="0,40,0,40"
                    Text="Welcome to Statki!" />
+
+        <!-- Logout Button -->
+        <Button Name="LogoutButton" 
+                Content="Logout" 
+                Width="80" 
+                Height="30" 
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Top" 
+                Margin="0,10,10,0" 
+                Background="#E74C3C" 
+                Foreground="White" 
+                FontSize="12" 
+                FontWeight="Bold" 
+                BorderBrush="#4E4E6E" 
+                BorderThickness="1" 
+                Cursor="Hand" 
+                Click="LogoutButton_Click" 
+                Visibility="Collapsed" />
 
         <!-- Central Button -->
         <Button Name="ActionButton" 

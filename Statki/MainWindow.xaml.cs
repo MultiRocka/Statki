@@ -1,10 +1,12 @@
 ﻿using Statki.Board;
 using Statki.Class;
+using Statki.Database;
 using Statki.Gameplay;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Statki
 {
@@ -31,18 +33,21 @@ namespace Statki
 
         public static ScoreManager scoreManager;
 
-        private readonly Statki.Database.DatabaseManager _databaseManager = new Statki.Database.DatabaseManager();
+        private DatabaseManager _databaseManager = new DatabaseManager();
 
+        private StatisticsManager _statisticsManager;
         public MainWindow()
         {
             InitializeComponent();
 
             _databaseManager.InitializeDatabase();
 
+            _statisticsManager = new StatisticsManager(_databaseManager);
+
             CreateLayout();
             CreateShips();
             InitializePlayersAndTurnManager();
-          
+
 
             MinHeight = 600;
             MinWidth = 1200;
@@ -203,8 +208,8 @@ namespace Statki
 
         private void UpdateScoreDisplay()
         {
-            playerScoreTextBlock.Text = $"Player SCORE: {scoreManager.PlayerScore}";
-            opponentScoreTextBlock.Text = $"Opponent SCORE: {scoreManager.OpponentScore}";
+            playerScoreTextBlock.Text = $"Player SCORE: {scoreManager.PlayerScore.ToString("N0")}";
+            opponentScoreTextBlock.Text = $"Opponent SCORE: {scoreManager.OpponentScore.ToString("N0")}";
         }
 
         public void HandleShot(bool isPlayer, bool isHit, int remainingTime)
@@ -427,6 +432,10 @@ namespace Statki
             gameGrid.Opacity = 0.2;
             opponentGrid.Opacity = 0.2;
 
+            _statisticsManager.CreateOrUpdateStatistics();
+
+            _statisticsManager.IncrementGamesPlayed();
+
             if (turnManager.Player1.AllShipsSunk())
             {
                 // Opponent wygrał
@@ -437,6 +446,10 @@ namespace Statki
                 message += $"Twój wynik: {playerScore}\n";
                 message += $"Wynik przeciwnika: {opponentScore}";
                 title = "Game Over";
+
+                _statisticsManager.IncrementGamesLost();
+                _statisticsManager.AddPoints(playerScore);
+                _statisticsManager.UpdateHighestScore(playerScore);
             }
             else if (turnManager.Player2.AllShipsSunk())
             {
@@ -448,6 +461,10 @@ namespace Statki
                 message += $"Twój wynik: {playerScore}\n";
                 message += $"Wynik przeciwnika: {opponentScore}";
                 title = "Game Over";
+
+                _statisticsManager.IncrementGamesWon();
+                _statisticsManager.AddPoints(playerScore);
+                _statisticsManager.UpdateHighestScore(playerScore);
             }
 
             // Wyświetlamy okno z przyciskiem "Zagraj ponownie"
