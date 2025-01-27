@@ -1,0 +1,109 @@
+﻿<Window x:Class="Statki.Database.Ranking.RankingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RankingWindow" Height="500" Width="800" Background="#1E1E2F">
+    <Window.Resources>
+        <!-- Style for DataGrid -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#2E2E3E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4E4E6E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="RowBackground" Value="#2E2E3E"/>
+            <Setter Property="AlternatingRowBackground" Value="#3E3E4E"/>
+            <Setter Property="RowHeight" Value="35"/>
+            <Setter Property="ColumnHeaderHeight" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="Transparent"/>
+            <Setter Property="VerticalGridLinesBrush" Value="Transparent"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="CellStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Padding" Value="10,0,10,0"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="#4E4E6E"/>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="FontSize" Value="16"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="Padding" Value="10,0,10,0"/>
+                        <Setter Property="BorderBrush" Value="#4E4E6E"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Style for TabItem -->
+        <Style TargetType="TabItem">
+            <Setter Property="Background" Value="#3E3E4E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#4A4A5E"/>
+                    <!-- Slightly lighter background -->
+                    <Setter Property="Foreground" Value="Black"/>
+                    <!-- Lighter text color -->
+                    <Setter Property="FontWeight" Value="Bold"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Text="Player Rankings" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,20,0,20" Grid.Row="0" />
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="1" Margin="10" Background="#2E2E3E" BorderBrush="#4E4E6E" BorderThickness="1">
+            <!-- Points Ranking Tab -->
+            <TabItem Header="Points Ranking">
+                <DataGrid x:Name="PointsRankingDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Rank Position" Binding="{Binding RankPosition}" Width="Auto"/>
+                        <DataGridTextColumn Header="Login" Binding="{Binding UserLogin}" Width="*"/>
+                        <DataGridTextColumn Header="Points" Binding="{Binding Points}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Highest Score Ranking Tab -->
+            <TabItem Header="Highest Score Ranking">
+                <DataGrid x:Name="HighestScoreRankingDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Rank Position" Binding="{Binding RankPosition}" Width="Auto"/>
+                        <DataGridTextColumn Header="Login" Binding="{Binding UserLogin}" Width="*"/>
+                        <DataGridTextColumn Header="Highest Score" Binding="{Binding HighestScore}" Width="*"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Back Button -->
+        <Button Content="Back" Grid.Row="2" Height="40" Background="#3E8E41" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1"
+                Margin="0,20,0,0" HorizontalAlignment="Center" Width="200" Click="BackButton_Click"/>
+    </Grid>
+</Window>

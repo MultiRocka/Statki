@@ -91,23 +91,6 @@ namespace Statki.Board
             }
         }
 
-        private void BoardTile_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (HitStatus == HitStatus.None)
-            {
-                PreviousBackground = this.Background; // Zachowaj aktualny kolor
-                this.Background = Brushes.Transparent;   // Kolor najechania myszką
-            }
-        }
-
-        private void BoardTile_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            if (HitStatus == HitStatus.None)
-            {
-                this.Background = PreviousBackground; // Przywraca poprzedni kolor
-            }
-        }
-
         // Metoda resetująca stan pola
         public void Reset()
         {
