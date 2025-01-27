@@ -69,16 +69,16 @@ namespace Statki.Database
                     Console.WriteLine("Tabela 'statistics' została pomyślnie utworzona (lub już istnieje).");
                 }
 
-
                 // Tabela Ranking
                 string createRankingTableQuery = @"
-                CREATE TABLE IF NOT EXISTS ranking (
+               CREATE TABLE IF NOT EXISTS ranking (
                     id SERIAL PRIMARY KEY,
                     stat_id INT NOT NULL REFERENCES statistics(id) ON DELETE CASCADE,
                     rank_points INT NOT NULL DEFAULT 0,
                     rank_highest_score INT NOT NULL DEFAULT 0,
                     last_update_points TIMESTAMP NOT NULL DEFAULT NOW(),
-                    last_update_highest_score TIMESTAMP NOT NULL DEFAULT NOW()
+                    last_update_highest_score TIMESTAMP NOT NULL DEFAULT NOW(),
+                    CONSTRAINT unique_stat_id UNIQUE (stat_id)
                 );";
 
                 using (var command = new NpgsqlCommand(createRankingTableQuery, connection))
@@ -251,12 +251,6 @@ namespace Statki.Database
 
         public DBUser GetUserBySessionToken(string sessionToken)
         {
-            // Sprawdzenie, czy sessionToken nie jest null ani pusty
-            //if (string.IsNullOrEmpty(sessionToken))
-            //{
-            //    throw new ArgumentException("Session token cannot be null or empty.");
-            //}
-
             if (!(sessionToken is string))
             {
                 throw new ArgumentException("Session token must be a string.");
@@ -296,9 +290,6 @@ namespace Statki.Database
 
             return null;
         }
-
-
-
         public class DBUser
         {
             public int Id { get; set; }

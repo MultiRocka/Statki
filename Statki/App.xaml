@@ -2,8 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Statki"
-             StartupUri="pack://application:,,,/Profile_Managment/StartupWindow.xaml">
+             StartupUri="pack://application:,,,/Profile_Managment/startupWindow.xaml">
     <Application.Resources>
-         
+       
     </Application.Resources>
 </Application>

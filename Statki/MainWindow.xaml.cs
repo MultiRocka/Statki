@@ -1,10 +1,12 @@
 ﻿using Statki.Board;
 using Statki.Class;
 using Statki.Database;
+using Statki.Database.Ranking;
 using Statki.Gameplay;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -23,7 +25,7 @@ namespace Statki
         private Button readyButton;
 
         public event Action<int> OnTimerUpdate;
-         
+
         private TextBlock playerBoardHeader;
         private TextBlock opponentBoardHeader;
         private TextBlock turnIndicatorTextBlock;
@@ -36,6 +38,9 @@ namespace Statki
         private DatabaseManager _databaseManager = new DatabaseManager();
 
         private StatisticsManager _statisticsManager;
+
+        private StackPanel timerPanel;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -310,51 +315,11 @@ namespace Statki
             Console.WriteLine($"Player2 ship count: {turnManager.Player2.Ships.Count}");
         }
 
-        private void ResetGame()
-        {
-            gameGrid.Opacity = 1.0;
-            opponentGrid.Opacity = 1.0;
-            gameGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
-            opponentGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
-
-            turnIndicatorTextBlock.Text = string.Empty;
-
-            // Wyczyść plansze
-            boardGridCreator.ClearBoard(gameGrid);
-            boardGridCreator.ClearBoard(opponentGrid);
-
-            // Reset punktów
-            scoreManager.ResetScores();
-            UpdateScoreDisplay();
-
-            foreach (var ship in turnManager.Player1.Ships)
-            {
-                ship.ResetState();
-            }
-
-            turnManager.Player1.Ships.Clear();
-            turnManager.Player2.Ships.Clear();
-            turnManager.Reset();
-
-            // Reset panelu lewego
-            StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
-            leftPanel.Width = ships.Any() ? ships.Max(ship => ship.Width * 230 + 10) : 230;
-
-            // Przywróć widoczność przycisku "Ready" i lewego panelu
-            readyButton.Visibility = Visibility.Visible;
-            leftPanel.Visibility = Visibility.Visible;
-
-            Grid mainGrid = (Grid)this.Content;
-            mainGrid.ColumnDefinitions[0].Width = new GridLength(leftPanel.Width);
-
-            InitializePlayersAndTurnManager();
-        }
-
         private void UpdateTimerText(int remainingTime)
         {
             Dispatcher.Invoke(() =>
             {
-                timerTextBlock.Text = $"czas: {remainingTime} s";
+                timerTextBlock.Text = $"Time: {remainingTime} s";
 
                 if (remainingTime <= 3)
                 {
@@ -415,6 +380,45 @@ namespace Statki
             }
         }
 
+        private void ResetGame()
+        {
+            gameGrid.Opacity = 1.0;
+            opponentGrid.Opacity = 1.0;
+            gameGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
+            opponentGrid.Effect = new System.Windows.Media.Effects.BlurEffect { Radius = 0 };
+
+            turnIndicatorTextBlock.Text = string.Empty;
+
+            // Wyczyść plansze
+            boardGridCreator.ClearBoard(gameGrid);
+            boardGridCreator.ClearBoard(opponentGrid);
+
+            // Reset punktów
+            scoreManager.ResetScores();
+            UpdateScoreDisplay();
+
+            foreach (var ship in turnManager.Player1.Ships)
+            {
+                ship.ResetState();
+            }
+
+            turnManager.Player1.Ships.Clear();
+            turnManager.Player2.Ships.Clear();
+            turnManager.Reset();
+
+            // Reset panelu lewego
+            StackPanel leftPanel = (StackPanel)((Grid)this.Content).Children[0];
+            leftPanel.Width = ships.Any() ? ships.Max(ship => ship.Width * 230 + 10) : 230;
+
+            // Przywróć widoczność przycisku "Ready" i lewego panelu
+            readyButton.Visibility = Visibility.Visible;
+            leftPanel.Visibility = Visibility.Visible;
+
+            Grid mainGrid = (Grid)this.Content;
+            mainGrid.ColumnDefinitions[0].Width = new GridLength(leftPanel.Width);
+
+            InitializePlayersAndTurnManager();
+        }
 
 
         private void TurnManager_OnGameOver()
@@ -477,6 +481,13 @@ namespace Statki
             {
                 Application.Current.Shutdown();
             }
+        }
+
+
+        public void GoToRanking()
+        {
+            var rankingWindow = new RankingWindow();
+            rankingWindow.Show();
         }
     }
 }

@@ -60,11 +60,9 @@ namespace Statki.Profile_Managment
                 // Sprawdzanie, czy użytkownik istnieje (logowanie przez login lub email)
                 var user = _databaseManager.GetUserByLoginOrEmail(loginOrEmail);
 
-                Console.WriteLine($"Elo tu masz id usera w login: {user.Id}, {user.Email}, {user.Login}, {user.PasswordHash}, {user.CreatedAt}, {user.UpdatedAt}");
-
                 if (user == null)
                 {
-                    LoginErrorLabel.Content = $"Użytkownik z loginem lub emailem '{loginOrEmail}' nie istnieje.";
+                    LoginErrorLabel.Content = $"Niepoprawny login/email lub hasło.";
                     LoginErrorLabel.Visibility = Visibility.Visible;
                     return;
                 }
