@@ -25,12 +25,6 @@ namespace Statki.Database
         {
         //    string loggedInUser = SessionManager.GetLoggedInUser();
 
-            //if (string.IsNullOrEmpty(loggedInUser))
-            //{
-            //    Console.WriteLine("Brak zalogowanego użytkownika.");
-            //    return;
-            //}
-
             DBUser user = _databaseManager.GetUserBySessionToken(SessionManager.CurrentSessionToken);
 
             if (user == null)
