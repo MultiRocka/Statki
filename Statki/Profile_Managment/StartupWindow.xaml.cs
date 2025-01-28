@@ -58,7 +58,7 @@ namespace Statki.Profile_Managment
             _loggedInUser = null;
         }
 
-        private void ActionButton_Click(object sender, RoutedEventArgs e)
+        private async void ActionButton_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(_loggedInUser))
             {
@@ -73,7 +73,7 @@ namespace Statki.Profile_Managment
                 var mainWindow = new MainWindow();
                 Application.Current.MainWindow = mainWindow;
                 mainWindow.Show();
-                this.Close();
+                this.Hide();
             }
         }
 

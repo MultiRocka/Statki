@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Statki": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}

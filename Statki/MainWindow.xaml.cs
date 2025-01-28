@@ -383,7 +383,7 @@ namespace Statki
             }
         }
 
-        private void ResetGame()
+        public void ResetGame()
         {
             gameGrid.Opacity = 1.0;
             opponentGrid.Opacity = 1.0;
@@ -407,6 +407,7 @@ namespace Statki
 
             turnManager.Player1.Ships.Clear();
             turnManager.Player2.Ships.Clear();
+
             turnManager.Reset();
 
             // Reset panelu lewego
@@ -426,65 +427,68 @@ namespace Statki
 
         private void TurnManager_OnGameOver()
         {
-            // Default values
-            string message = "Unexpected game result.";
-            string title = "Game Over";
+            // Domyślne wartości
+            string message = "";
+            bool isWin = false;
 
-            // Get player and opponent scores
+            // Pobierz wyniki gracza i przeciwnika
             int playerScore = scoreManager.PlayerScore;
             int opponentScore = scoreManager.OpponentScore;
 
-            // Change opacity of grids
+            // Zmień przezroczystość siatek gry
             gameGrid.Opacity = 0.2;
             opponentGrid.Opacity = 0.2;
 
+            // Aktualizacja statystyk
             _statisticsManager.CreateOrUpdateStatistics();
             _statisticsManager.IncrementGamesPlayed();
 
+            // Sprawdź, czy gracz przegrał
             if (turnManager.Player1.AllShipsSunk())
             {
-                // Opponent won
-                message = "YOU LOSE\n\n";
-                message += $"Player 1 turns: {turnManager._player1Turns}\n";
-                message += $"Opponent turns: {turnManager._player2Turns}\n";
-                message += $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Your score: {playerScore.ToString("N0")}\n"; // Adding space as thousand separator
-                message += $"Opponent score: {opponentScore.ToString("N0")}";
-                title = "Game Over";
+                // Przegrana
+                isWin = false;
+                message = $"YOU LOSE\n\n" +
+                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                          $"Opponent turns: {turnManager._player2Turns}\n" +
+                          $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
+                          $"Your score: {playerScore.ToString("N0")}\n" +
+                          $"Opponent score: {opponentScore.ToString("N0")}";
 
+                // Aktualizuj statystyki
                 _statisticsManager.IncrementGamesLost();
                 _statisticsManager.AddPoints(playerScore);
                 _statisticsManager.UpdateHighestScore(playerScore);
             }
             else if (turnManager.Player2.AllShipsSunk())
             {
-                // Player 1 won
-                message = "YOU WIN\n\n";
-                message += $"Player 1 turns: {turnManager._player1Turns}\n";
-                message += $"Opponent turns: {turnManager._player2Turns}\n";
-                message += $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Your score: {playerScore.ToString("N0")}\n"; // Adding space as thousand separator
-                message += $"Opponent score: {opponentScore.ToString("N0")}";
-                title = "Game Over";
+                // Wygrana
+                isWin = true;
+                message = $"YOU WIN\n\n" +
+                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                          $"Opponent turns: {turnManager._player2Turns}\n" +
+                          $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
+                          $"Your score: {playerScore.ToString("N0")}\n" +
+                          $"Opponent score: {opponentScore.ToString("N0")}";
 
+                // Aktualizuj statystyki
                 _statisticsManager.IncrementGamesWon();
                 _statisticsManager.AddPoints(playerScore);
                 _statisticsManager.UpdateHighestScore(playerScore);
             }
 
-            // Display the Game Over window with "Play Again" button
-            MessageBoxResult result = MessageBox.Show($"{message}\n\nWould you like to play again?", title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            // Otwórz okno GameOverWindow
+            GameOverWindow gameOverWindow = new GameOverWindow(isWin, message);
+            gameOverWindow.ShowDialog();
 
-            if (result == MessageBoxResult.Yes)
+            // Sprawdź decyzję gracza
+            if (gameOverWindow.ResetGameRequested)
             {
                 ResetGame();
-                rankingWindow.Hide();
             }
             else
             {
-                this.Hide();
-                StartupWindow startupWindow = new StartupWindow();
-                startupWindow.Show();
+                Application.Current.Shutdown();
             }
         }
     }
