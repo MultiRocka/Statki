@@ -114,7 +114,7 @@ namespace Statki.Database
 
                 return true;
             }
-            catch (PostgresException ex) when (ex.SqlState == "23505") // Unique violation
+            catch (PostgresException ex) when (ex.SqlState == "23505")
             {
                 // Logika w przypadku duplikatu loginu lub emaila
                 return false;
@@ -149,7 +149,6 @@ namespace Statki.Database
                         {
                             if (reader.Read())
                             {
-                                Console.WriteLine($"Elo tu masz id usera {reader["id"]}, {reader["email"]}, {reader["login"]}");
                                 return new DBUser
                                 {
                                     Id = Convert.ToInt32(reader["id"]),
@@ -172,24 +171,43 @@ namespace Statki.Database
             return null;
         }
 
-
         public bool UpdateUser(string currentLogin, string newLogin, string newPassword, string newEmail)
         {
-            const string query = @"
-            UPDATE users
-            SET login = @NewLogin, 
-                password = @NewPassword, 
-                email = @NewEmail,
-                updated_at = NOW()
-            WHERE login = @CurrentLogin";
-
+            // Sprawdzanie, czy nowy login lub email już istnieje
+            const string checkDuplicateQuery = @"
+                SELECT 1
+                FROM users
+                WHERE (login = @NewLogin OR email = @NewEmail) AND login != @CurrentLogin";
             try
             {
                 using (var connection = new NpgsqlConnection(ConnectionString))
                 {
                     connection.Open();
 
-                    using (var command = new NpgsqlCommand(query, connection))
+                    using (var checkCommand = new NpgsqlCommand(checkDuplicateQuery, connection))
+                    {
+                        checkCommand.Parameters.AddWithValue("@NewLogin", newLogin);
+                        checkCommand.Parameters.AddWithValue("@NewEmail", newEmail);
+                        checkCommand.Parameters.AddWithValue("@CurrentLogin", currentLogin);
+
+                        var duplicate = checkCommand.ExecuteScalar();
+                        if (duplicate != null)
+                        {
+                            Console.WriteLine("Błąd: Login lub email już istnieje.");
+                            return false; 
+                        }
+                    }
+
+                    // Jeśli nie ma duplikatu, wykonujemy aktualizację danych
+                    const string updateQuery = @"
+                        UPDATE users
+                        SET login = @NewLogin, 
+                            password = @NewPassword, 
+                            email = @NewEmail,
+                            updated_at = NOW()
+                        WHERE login = @CurrentLogin";
+
+                    using (var command = new NpgsqlCommand(updateQuery, connection))
                     {
                         command.Parameters.AddWithValue("@NewLogin", newLogin);
                         command.Parameters.AddWithValue("@NewPassword", newPassword);
@@ -208,6 +226,7 @@ namespace Statki.Database
             }
         }
 
+
         public void SaveSessionToken(int userId, string sessionToken, DateTime expiresAt)
         {
             string checkQuery = @"
@@ -218,6 +237,11 @@ namespace Statki.Database
             string insertQuery = @"
                 INSERT INTO sessions (user_id, session_token, created_at, expires_at)
                 VALUES (@UserId, @SessionToken, NOW(), @ExpiresAt);";
+
+            string updateQuery = @"
+                UPDATE sessions
+                SET session_token = @SessionToken, expires_at = @ExpiresAt
+                WHERE user_id = @UserId AND expires_at > NOW();";
 
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -232,11 +256,28 @@ namespace Statki.Database
                     {
                         sessionToken = existingToken.ToString();
                         Console.WriteLine($"Token already exists in database: {sessionToken}");
+
+                        // Zaktualizuj datę wygaśnięcia tokenu
+                        using (var updateCommand = new NpgsqlCommand(updateQuery, connection))
+                        {
+                            // Oblicz nową datę wygaśnięcia (2 godziny od teraz)
+                            DateTime newExpirationDate = DateTime.UtcNow.AddHours(2);
+
+                            updateCommand.Parameters.AddWithValue("@UserId", userId);
+                            updateCommand.Parameters.AddWithValue("@SessionToken", sessionToken);
+                            updateCommand.Parameters.AddWithValue("@ExpiresAt", newExpirationDate);
+
+                            updateCommand.ExecuteNonQuery();
+                            Console.WriteLine($"Token expiration updated for user {userId}, new expiration date: {newExpirationDate}");
+                        }
+
+                        // Zapisz token do menedżera sesji
                         SessionManager.SetSessionToken(sessionToken);
                         return;
                     }
                 }
 
+                // Jeśli token nie istnieje, wstaw nowy
                 using (var insertCommand = new NpgsqlCommand(insertQuery, connection))
                 {
                     insertCommand.Parameters.AddWithValue("@UserId", userId);
@@ -247,10 +288,11 @@ namespace Statki.Database
                     Console.WriteLine($"Token inserted into database: {sessionToken}");
                 }
 
-                // Zapisz token do pliku po upewnieniu się, że jest nowy
+                // Zapisz nowy token do menedżera sesji
                 SessionManager.SetSessionToken(sessionToken);
             }
         }
+
 
 
 

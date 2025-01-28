@@ -118,23 +118,19 @@ namespace Statki.Board
 
         public async void UpdateTileAppearance()
         {
-            // Jeśli kafelek jest zajęty przez statek i nie był jeszcze trafiony
+
             if (IsOccupied && HitStatus == HitStatus.None && IsOpponent ==false)
             {
-                //this.Background = new ImageBrush(new BitmapImage(new Uri("C:\\Users\\Krzysiek\\Desktop\\PROJEKTY\\Statki\\Assets\\ship.png")));
-                this.Background = Brushes.Blue;
+               this.Background = Brushes.Blue;
             }
             else
             {
-                // Jeśli statek jest zatopiony, ustaw kolor na czarny
                 if (AssignedShip != null && AssignedShip.IsSunk)
                 {
-                    // Uruchomienie animacji zatopienia dla wszystkich kafelków statku
                     await AnimateSinking(AssignedShip.OccupiedTiles, TimeSpan.FromMilliseconds(75));
                 }
                 else
                 {
-                    // Ustaw tło na podstawie statusu trafienia
                     switch (HitStatus)
                     {
                         case HitStatus.None:

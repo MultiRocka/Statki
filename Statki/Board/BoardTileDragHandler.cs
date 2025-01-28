@@ -84,7 +84,7 @@ namespace Statki.Board
                 if (endRow > 10 || endCol > 10 || !CanPlaceShip(startRow, startCol, ship))
                 {
                     MessageBox.Show("Nie możesz umieścić statku tutaj!");
-                    ClearAllHighlights(); // Resetowanie wszystkich podświetleń
+                    ClearAllHighlights(); 
                     RestorePreviousPosition(ship);
                     return;
                 }

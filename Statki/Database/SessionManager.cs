@@ -28,7 +28,6 @@ namespace Statki.Database
 
         public static void SetSessionToken(string token)
         {
-            Console.WriteLine($"SETSESSIONTOKEN: {token}");
             File.WriteAllText(SessionFilePath, token);
         }
 
@@ -49,7 +48,6 @@ namespace Statki.Database
                     Console.WriteLine($"Odczytany token sesji: {token}");
                     _currentSessionToken = token;
                 }
-
                 return token;
             }
             else
@@ -57,10 +55,7 @@ namespace Statki.Database
                 Console.WriteLine("Plik sesji nie istnieje.");
                 return string.Empty;
             }
-
-
         }
-
 
         public static void ClearSession()
         {

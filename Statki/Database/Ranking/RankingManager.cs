@@ -87,9 +87,9 @@ namespace Statki.Database.Ranking
         private void UpdatePlayerRankings(PlayerRanking userStats, int rankPosition, int rankHighestScorePosition)
         {
             string checkQuery = @"
-        SELECT rank_points, rank_highest_score
-        FROM ranking
-        WHERE stat_id = (SELECT id FROM statistics WHERE user_id = @UserId);";
+                SELECT rank_points, rank_highest_score
+                FROM ranking
+                WHERE stat_id = (SELECT id FROM statistics WHERE user_id = @UserId);";
 
             int? currentRankPoints = null;
             int? currentRankHighestScore = null;

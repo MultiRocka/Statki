@@ -149,7 +149,7 @@ namespace Statki.Gameplay
                     int col = isHorizontal ? startCol + i : startCol + j;
 
                     // Sprawdzamy, czy w danym miejscu nie ma statku lub nie wykracza poza planszę
-                    BoardTile gridTile = GetTileAtPosition(row, col, board); // Funkcja GetTileAtPosition musi zostać zaimplementowana
+                    BoardTile gridTile = GetTileAtPosition(row, col, board);
                     if (gridTile == null || gridTile.IsOccupied)
                     {
                         return false;
@@ -171,14 +171,14 @@ namespace Statki.Gameplay
                                 BoardTile adjacentTile = GetTileAtPosition(checkRow, checkCol, board);
                                 if (adjacentTile != null && adjacentTile.IsOccupied)
                                 {
-                                    return false; // Jeżeli którykolwiek sąsiedni kafelek jest zajęty, nie możemy postawić statku
+                                    return false;
                                 }
                             }
                         }
                     }
                 }
             }
-            return true; // Jeżeli wszystkie sprawdzenia przeszły pomyślnie, możemy postawić statek
+            return true;
         }
 
         public BoardTile GetTileAtPosition(int row, int col, Grid board)
@@ -190,10 +190,8 @@ namespace Statki.Gameplay
                     return tile;
                 }
             }
-            return null; // Jeśli nie znaleziono kafelka na danej pozycji
+            return null; 
         }
-
-
 
         public bool AllShipsSunk()
         {
@@ -214,16 +212,16 @@ namespace Statki.Gameplay
 
         public Ship GetShipAtPosition(int row, int col)
         {
-            // Sprawdzamy, czy w danej pozycji znajduje się statek
+
             foreach (var ship in Ships)
             {
                 var tile = ship.OccupiedTiles.Find(t => Grid.GetRow(t) == row && Grid.GetColumn(t) == col);
                 if (tile != null)
                 {
-                    return ship; // Zwracamy statek, jeśli znaleziono pasujący kafelek
+                    return ship; 
                 }
             }
-            return null; // Jeśli nie znaleziono statku w tej pozycji
+            return null; 
         }
 
          public bool AllShipsPlaced()
