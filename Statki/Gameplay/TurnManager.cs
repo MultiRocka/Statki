@@ -88,6 +88,8 @@ namespace Statki.Gameplay
 
         private void TurnTimer_Tick(object sender, EventArgs e)
         {
+            Console.WriteLine($"Tick - Remaining Time: {remainingTime}");
+
             if (_isGameOver)
                 return;
 
@@ -300,7 +302,12 @@ namespace Statki.Gameplay
                 Instance.InitializeTurnTimer();
                 Console.WriteLine("TurnManager initialized successfully.");
             }
+            else
+            {
+                Console.WriteLine("TurnManager already initialized.");
+            }
         }
+
 
         public void Player1AddTurn()
         {
@@ -309,18 +316,26 @@ namespace Statki.Gameplay
 
         public void Reset()
         {
+            _turnTimer.Stop(); // Zatrzymaj timer
+            _turnTimeRemaining = 20;
+            _shipPlacementTimeRemaining = 30;
+
+            // Resetujemy stan fazy
             _isPlayerTurn = new Random().Next(0, 2) == 0;
             _isGameOver = false;
             _isPlacementPhase = false;
 
             _player1Turns = 0;
             _player2Turns = 0;
+
             OnGameOver = null;
             OnTimerUpdate = null;
 
-            ResetTimer();
-            Start();
+            ResetTimer();  // Zresetuj timer
+
+            Start();  // Uruchom ponownie grę
         }
+
 
         public void ResetTimer()
         {
