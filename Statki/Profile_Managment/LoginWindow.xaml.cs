@@ -38,7 +38,7 @@ namespace Statki.Profile_Managment
             string loginOrEmail = LoginTextBox.Text.Trim();
             string password = PasswordBox.Password.Trim();
 
-            
+
 
             // Walidacja danych wejściowych
             if (string.IsNullOrEmpty(loginOrEmail))
@@ -57,7 +57,7 @@ namespace Statki.Profile_Managment
 
             try
             {
-                // Sprawdzanie, czy użytkownik istnieje (logowanie przez login lub email)
+                // Sprawdzanie, czy użytkownik istnieje
                 var user = _databaseManager.GetUserByLoginOrEmail(loginOrEmail);
 
                 if (user == null)
@@ -76,8 +76,19 @@ namespace Statki.Profile_Managment
                     string sessionToken = TokenGenerator.GenerateSessionToken(user.Id);
                     DateTime expiresAt = DateTime.UtcNow.AddHours(2);
 
-                    // Zapisanie tokenu w bazie danych
-                    _databaseManager.SaveSessionToken(user.Id, sessionToken, expiresAt);
+                    // Sprawdź, czy istnieje token w bazie danych
+                    var existingToken = _databaseManager.GetExistingSessionToken(user.Id);
+
+                    if (existingToken != null)
+                    {
+                        Console.WriteLine($"Token already exists in database for user {user.Id}: {existingToken}");
+                        sessionToken = existingToken;
+                    }
+                    else
+                    {
+                        // Zapisanie tokenu w bazie danych
+                        _databaseManager.SaveSessionToken(user.Id, sessionToken, expiresAt);
+                    }
 
                     // Zapisanie tokenu w pliku na komputerze użytkownika
                     SessionManager.SetSessionToken(sessionToken);
@@ -100,6 +111,7 @@ namespace Statki.Profile_Managment
             {
                 MessageBox.Show($"Wystąpił błąd: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
         }
 
         private void RegisterRedirect_Click(object sender, RoutedEventArgs e)

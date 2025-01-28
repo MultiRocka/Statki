@@ -211,13 +211,13 @@ namespace Statki.Database
         public void SaveSessionToken(int userId, string sessionToken, DateTime expiresAt)
         {
             string checkQuery = @"
-            SELECT session_token 
-            FROM sessions 
-            WHERE user_id = @UserId AND expires_at > NOW()";
+                SELECT session_token 
+                FROM sessions 
+                WHERE user_id = @UserId AND expires_at > NOW()";
 
             string insertQuery = @"
-            INSERT INTO sessions (user_id, session_token, created_at, expires_at)
-            VALUES (@UserId, @SessionToken, NOW(), @ExpiresAt);";
+                INSERT INTO sessions (user_id, session_token, created_at, expires_at)
+                VALUES (@UserId, @SessionToken, NOW(), @ExpiresAt);";
 
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -230,8 +230,8 @@ namespace Statki.Database
                     var existingToken = checkCommand.ExecuteScalar();
                     if (existingToken != null)
                     {
-                        // Jeśli token już istnieje, nie tworzymy nowego
                         sessionToken = existingToken.ToString();
+                        Console.WriteLine($"Token already exists in database: {sessionToken}");
                         SessionManager.SetSessionToken(sessionToken);
                         return;
                     }
@@ -244,9 +244,15 @@ namespace Statki.Database
                     insertCommand.Parameters.AddWithValue("@ExpiresAt", expiresAt);
 
                     insertCommand.ExecuteNonQuery();
+                    Console.WriteLine($"Token inserted into database: {sessionToken}");
                 }
+
+                // Zapisz token do pliku po upewnieniu się, że jest nowy
+                SessionManager.SetSessionToken(sessionToken);
             }
         }
+
+
 
 
         public DBUser GetUserBySessionToken(string sessionToken)
@@ -290,6 +296,27 @@ namespace Statki.Database
 
             return null;
         }
+
+        public string GetExistingSessionToken(int userId)
+        {
+            string query = @"
+                SELECT session_token 
+                FROM sessions 
+                WHERE user_id = @UserId 
+                  AND expires_at > NOW()";
+
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                connection.Open();
+                using (var command = new NpgsqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    var result = command.ExecuteScalar();
+                    return result?.ToString();
+                }
+            }
+        }
+
         public class DBUser
         {
             public int Id { get; set; }

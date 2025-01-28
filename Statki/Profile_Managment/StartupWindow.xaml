@@ -49,6 +49,23 @@
                 Cursor="Hand"
                 Click="ActionButton_Click" />
 
+        <!-- Ranking Button -->
+        <Button Name="RankingButton" 
+                Content="Ranking" 
+                Width="200" 
+                Height="40" 
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Bottom" 
+                Margin="0,0,0,80" 
+                Background="#F39C12" 
+                Foreground="White" 
+                FontSize="14" 
+                FontWeight="Bold" 
+                BorderBrush="#4E4E6E" 
+                BorderThickness="1" 
+                Cursor="Hand"
+                Click="RankingButton_Click" />
+
         <!-- Edit Profile Button -->
         <Button Name="EditProfileButton" 
                 Content="Edit Profile" 

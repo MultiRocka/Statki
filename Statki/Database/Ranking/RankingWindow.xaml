@@ -85,7 +85,7 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Rank Position" Binding="{Binding RankPosition}" Width="Auto"/>
                         <DataGridTextColumn Header="Login" Binding="{Binding UserLogin}" Width="*"/>
-                        <DataGridTextColumn Header="Points" Binding="{Binding Points}" Width="*"/>
+                        <DataGridTextColumn Header="Points" Binding="{Binding FormattedPoints}" Width="*"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
@@ -96,7 +96,8 @@
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Rank Position" Binding="{Binding RankPosition}" Width="Auto"/>
                         <DataGridTextColumn Header="Login" Binding="{Binding UserLogin}" Width="*"/>
-                        <DataGridTextColumn Header="Highest Score" Binding="{Binding HighestScore}" Width="*"/>
+                        <DataGridTextColumn Header="Highest Score" Binding="{Binding FormattedHighestScore}" Width="*"/>
+                        <!-- Sformatowany najwyższy wynik -->
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

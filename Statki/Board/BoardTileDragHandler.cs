@@ -27,8 +27,6 @@ namespace Statki.Board
             {
                 _heldShip = ship;
                 HighlightTiles(sender as BoardTile, ship, Brushes.LightGreen, temporary: true);
-                
-                Console.WriteLine("Działa to: " + _heldShip.Name);
             }
         }
 
