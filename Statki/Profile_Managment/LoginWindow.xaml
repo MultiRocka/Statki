@@ -14,8 +14,11 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Nagłówek -->
-        <TextBlock Text="Zaloguj się" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,20,0,20" Grid.Row="0" />
+        <Button Content="⟵" Width="35" Height="35" Background="#3A6EA5" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1" 
+        HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,20,0,0" Grid.Row="0" Click="BackButton_Click" />
+
+        <!-- Header -->
+        <TextBlock Text="Log in" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,20,0,20" Grid.Row="0" />
 
         <!-- Login -->
         <StackPanel Grid.Row="1" Margin="0,0,0,10">
@@ -24,20 +27,22 @@
             <Label x:Name="LoginErrorLabel" Content="" Foreground="Red" FontSize="12" />
         </StackPanel>
 
-        <!-- Hasło -->
+        <!-- Password -->
         <StackPanel Grid.Row="2" Margin="0,0,0,10">
-            <TextBlock Text="Hasło:" FontSize="14" Foreground="White" Margin="5" />
+            <TextBlock Text="Password:" FontSize="14" Foreground="White" Margin="5" />
             <PasswordBox x:Name="PasswordBox" Height="30" Background="#2E2E3E" Foreground="White" BorderBrush="#4E4E6E" BorderThickness="1" />
             <Label x:Name="PasswordErrorLabel" Content="" Foreground="Red" FontSize="12" />
         </StackPanel>
 
-        <!-- Przycisk logowania -->
-        <Button Content="Zaloguj" Grid.Row="3" Height="40" Background="#3E8E41" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1"
+        <!-- Login button -->
+        <Button Content="Log in" Grid.Row="3" Height="40" Background="#3E8E41" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1"
                 Margin="0,20,0,0" Click="LoginButton_Click" HorizontalAlignment="Center" Width="200" />
 
-        <!-- Informacje pomocnicze -->
-        <TextBlock Text="Nie masz konta? " FontSize="12" Foreground="Gray" HorizontalAlignment="Center" Grid.Row="4" Margin="0,20,0,0">
-            <Run Text="Zarejestruj się!" Foreground="LightBlue" TextDecorations="Underline" Cursor="Hand" MouseLeftButtonUp="RegisterRedirect_Click" />
+        <TextBlock FontSize="12" Foreground="Gray" HorizontalAlignment="Center" Grid.Row="4" Margin="0,20,0,0">
+            <Run Text="Don't have an account?" />
+            <Run Text="Register here! " Foreground="LightBlue" TextDecorations="Underline" Cursor="Hand" MouseLeftButtonUp="RegisterRedirect_Click" />
+
         </TextBlock>
+
     </Grid>
 </Window>

@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Statki.Profile_Managment.EditProfileWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Edytuj Profil" Height="450" Width="350" Background="#1E1E2F">
+        Title="Edit Profile" Height="500" Width="350" Background="#1E1E2F">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -13,43 +13,43 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Powrót do ekranu startowego -->
+        <!-- Back to the start screen -->
         <Button Content="←" Grid.Row="1" Width="40" Height="40" Background="#3E8E41" Foreground="White" FontSize="18" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="2" 
                 HorizontalAlignment="Left" Click="BackButton_Click" />
 
-        <!-- Nagłówek -->
-        <TextBlock Text="Edytuj swoje dane" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,5" Grid.Row="1" />
+        <!-- Header -->
+        <TextBlock Text="Edit Your Data" FontSize="24" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,5,0,5" Grid.Row="1" />
 
-        <!-- Login -->
+        <!-- Username -->
         <StackPanel Grid.Row="2" Margin="0,0,0,10">
-            <TextBlock Text="Login:" FontSize="14" Foreground="White" Margin="5" />
+            <TextBlock Text="Username:" FontSize="14" Foreground="White" Margin="5" />
             <TextBox x:Name="LoginBox" Height="30" Background="#2E2E3E" Foreground="White" BorderBrush="#4E4E6E" BorderThickness="1" />
             <TextBlock x:Name="LoginErrorLabel" Foreground="Red" FontSize="12" Margin="5,2,0,0" Visibility="Collapsed" />
         </StackPanel>
 
-        <!-- E-mail -->
+        <!-- Email -->
         <StackPanel Grid.Row="3" Margin="0,0,0,10">
             <TextBlock Text="Email:" FontSize="14" Foreground="White" Margin="5" />
             <TextBox x:Name="EmailBox" Height="30" Background="#2E2E3E" Foreground="White" BorderBrush="#4E4E6E" BorderThickness="1" />
             <TextBlock x:Name="EmailErrorLabel" Foreground="Red" FontSize="12" Margin="5,2,0,0" Visibility="Collapsed" />
         </StackPanel>
 
-        <!-- Hasło -->
+        <!-- Password -->
         <StackPanel Grid.Row="4" Margin="0,0,0,10">
-            <TextBlock Text="Hasło:" FontSize="14" Foreground="White" Margin="5" />
+            <TextBlock Text="Password:" FontSize="14" Foreground="White" Margin="5" />
             <PasswordBox x:Name="PasswordBox" Height="30" Background="#2E2E3E" Foreground="White" BorderBrush="#4E4E6E" BorderThickness="1" />
             <TextBlock x:Name="PasswordErrorLabel" Foreground="Red" FontSize="12" Margin="5,2,0,0" Visibility="Collapsed" />
         </StackPanel>
 
-        <!-- Potwierdzenie hasła -->
+        <!-- Confirm Password -->
         <StackPanel Grid.Row="5" Margin="0,0,0,10">
-            <TextBlock Text="Potwierdź hasło:" FontSize="14" Foreground="White" Margin="5" />
+            <TextBlock Text="Confirm Password:" FontSize="14" Foreground="White" Margin="5" />
             <PasswordBox x:Name="ConfirmPasswordBox" Height="30" Background="#2E2E3E" Foreground="White" BorderBrush="#4E4E6E" BorderThickness="1" />
             <TextBlock x:Name="ConfirmPasswordErrorLabel" Foreground="Red" FontSize="12" Margin="5,2,0,0" Visibility="Collapsed" />
         </StackPanel>
 
-        <!-- Przycisk zapisu zmian -->
-        <Button Content="Zapisz zmiany" Grid.Row="6" Height="40" Background="#3E8E41" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1"
-                Margin="0,-50,0,0" Click="SaveButton_Click" HorizontalAlignment="Center" Width="200" />
+        <!-- Save Changes Button -->
+        <Button Content="Save Changes" Grid.Row="6" Height="40" Background="#3E8E41" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="1"
+                Margin="0,23,0,35" Click="SaveButton_Click" HorizontalAlignment="Center" Width="200" />
     </Grid>
 </Window>
