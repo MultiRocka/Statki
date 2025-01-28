@@ -43,14 +43,14 @@ namespace Statki.Profile_Managment
             // Walidacja danych wejściowych
             if (string.IsNullOrEmpty(loginOrEmail))
             {
-                LoginErrorLabel.Content = "Pole login lub email jest wymagane.";
+                LoginErrorLabel.Content = "Login or email is required.";
                 LoginErrorLabel.Visibility = Visibility.Visible;
                 return;
             }
 
             if (string.IsNullOrEmpty(password))
             {
-                PasswordErrorLabel.Content = "Pole hasło jest wymagane.";
+                PasswordErrorLabel.Content = "Password is required.";
                 PasswordErrorLabel.Visibility = Visibility.Visible;
                 return;
             }
@@ -62,7 +62,7 @@ namespace Statki.Profile_Managment
 
                 if (user == null)
                 {
-                    LoginErrorLabel.Content = $"Niepoprawny login/email lub hasło.";
+                    LoginErrorLabel.Content = $"Invalid login/email.";
                     LoginErrorLabel.Visibility = Visibility.Visible;
                     return;
                 }
@@ -103,15 +103,22 @@ namespace Statki.Profile_Managment
                 }
                 else
                 {
-                    PasswordErrorLabel.Content = "Nieprawidłowe hasło.";
+                    PasswordErrorLabel.Content = "Invalid password.";
                     PasswordErrorLabel.Visibility = Visibility.Visible;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Wystąpił błąd: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
 
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Powrót na ekran startowy
+            var startupWindow = new StartupWindow();
+            startupWindow.Show();
+            this.Close();
         }
 
         private void RegisterRedirect_Click(object sender, RoutedEventArgs e)

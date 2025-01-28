@@ -24,13 +24,13 @@ namespace Statki.Profile_Managment
             if (user != null)
             {
                 LoginBox.Text = user.Login;
-                EmailBox.Text = user.Email; // Załóżmy, że masz pole "Email" w bazie
+                EmailBox.Text = user.Email; 
             }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            // Resetowanie widoczności błędów
+            // Resetting error visibility
             LoginErrorLabel.Visibility = Visibility.Collapsed;
             EmailErrorLabel.Visibility = Visibility.Collapsed;
             PasswordErrorLabel.Visibility = Visibility.Collapsed;
@@ -38,34 +38,34 @@ namespace Statki.Profile_Managment
 
             bool isValid = true;
 
-            // Walidacja loginu
+            // Login validation
             if (string.IsNullOrWhiteSpace(LoginBox.Text))
             {
-                LoginErrorLabel.Text = "Login nie może być pusty.";
+                LoginErrorLabel.Text = "Username cannot be empty.";
                 LoginErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
 
-            // Walidacja e-maila
+            // Email validation
             if (string.IsNullOrWhiteSpace(EmailBox.Text) || !EmailBox.Text.Contains("@"))
             {
-                EmailErrorLabel.Text = "Wprowadź poprawny adres e-mail.";
+                EmailErrorLabel.Text = "Please enter a valid email address.";
                 EmailErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
 
-            // Walidacja hasła
+            // Password validation
             if (string.IsNullOrWhiteSpace(PasswordBox.Password) || PasswordBox.Password.Length < 6)
             {
-                PasswordErrorLabel.Text = "Hasło musi zawierać co najmniej 6 znaków.";
+                PasswordErrorLabel.Text = "Password must be at least 6 characters long.";
                 PasswordErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
 
-            // Walidacja potwierdzenia hasła
+            // Confirm password validation
             if (PasswordBox.Password != ConfirmPasswordBox.Password)
             {
-                ConfirmPasswordErrorLabel.Text = "Hasła nie są zgodne.";
+                ConfirmPasswordErrorLabel.Text = "Passwords do not match.";
                 ConfirmPasswordErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
@@ -73,23 +73,22 @@ namespace Statki.Profile_Managment
             if (!isValid)
                 return;
 
-            // Zapis zmian
+            // Save changes
             bool updated = _databaseManager.UpdateUser(_loggedInUser, LoginBox.Text, PasswordBox.Password, EmailBox.Text);
             if (updated)
             {
-                MessageBox.Show("Profil został zaktualizowany.", "Sukces", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Profile has been updated.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 this.Close();
             }
             else
             {
-                MessageBox.Show("Nie udało się zaktualizować profilu.", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Failed to update the profile.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
-            // Powrót na ekran startowy
+            // Return to the startup screen
             var startupWindow = new StartupWindow();
             startupWindow.Show();
             this.Close();
