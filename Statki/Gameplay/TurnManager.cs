@@ -47,8 +47,6 @@ namespace Statki.Gameplay
             InitializeTurnTimer();
         }
 
-
-
         public TurnManager(Player player1, Player player2, Button readyButton)
         {
             Instance.Player1 = player1;
@@ -183,7 +181,7 @@ namespace Statki.Gameplay
                     ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(true, false); // Podświetlamy planszę gracza
                 });
             }
-            else // Tura przeciwnika
+            else 
             {
                 Console.WriteLine("--- Opponent's Turn ---");
                 HasPlayerShot = false;  // Resetujemy stan gracza
@@ -192,8 +190,6 @@ namespace Statki.Gameplay
                 {
                     ((MainWindow)Application.Current.MainWindow)?.HighlightBoard(false, false); // Podświetlamy planszę przeciwnika
                 });
-
-                // Przeciwnik wykonuje strzał
                 Opponent opponent = Player2 as Opponent;
                 if (opponent != null)
                 {

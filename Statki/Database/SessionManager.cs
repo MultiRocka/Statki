@@ -28,6 +28,7 @@ namespace Statki.Database
 
         public static void SetSessionToken(string token)
         {
+            Console.WriteLine($"SETSESSIONTOKEN: {token}");
             File.WriteAllText(SessionFilePath, token);
         }
 
@@ -57,7 +58,7 @@ namespace Statki.Database
                 return string.Empty;
             }
 
-            
+
         }
 
 

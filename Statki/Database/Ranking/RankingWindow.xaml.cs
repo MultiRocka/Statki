@@ -34,18 +34,18 @@ namespace Statki.Database.Ranking
             if (isForHighestScore)
             {
                 query = @"
-                    SELECT u.login, s.highest_score
-                    FROM statistics s
-                    JOIN users u ON u.id = s.user_id
-                    ORDER BY s.highest_score DESC;";
+            SELECT u.login, s.highest_score
+            FROM statistics s
+            JOIN users u ON u.id = s.user_id
+            ORDER BY s.highest_score DESC;";
             }
             else
             {
                 query = @"
-                    SELECT u.login, s.points
-                    FROM statistics s
-                    JOIN users u ON u.id = s.user_id
-                    ORDER BY s.points DESC;";
+            SELECT u.login, s.points
+            FROM statistics s
+            JOIN users u ON u.id = s.user_id
+            ORDER BY s.points DESC;";
             }
 
             using (var connection = new NpgsqlConnection(ConnectionString))
@@ -63,16 +63,24 @@ namespace Statki.Database.Ranking
                             {
                                 RankPosition = position++,
                                 UserLogin = reader.GetString(0),
-                                Points = isForHighestScore ? 0 : reader.GetInt32(1), // Tylko dla punktów
-                                HighestScore = isForHighestScore ? reader.GetInt32(1) : 0  // Tylko dla najwyższego wyniku
+                                Points = isForHighestScore ? 0 : reader.GetInt32(1), // Only for points
+                                HighestScore = isForHighestScore ? reader.GetInt32(1) : 0  // Only for highest score
                             });
                         }
                     }
                 }
             }
 
+            // Format numbers with thousand separators
+            foreach (var entry in rankingEntries)
+            {
+                entry.FormattedPoints = entry.Points.ToString("N0");
+                entry.FormattedHighestScore = entry.HighestScore.ToString("N0");
+            }
+
             return rankingEntries;
         }
+
 
         private void BackButton_Click(object sender, RoutedEventArgs e)
         {
@@ -89,5 +97,10 @@ namespace Statki.Database.Ranking
         public string UserLogin { get; set; }
         public int Points { get; set; }
         public int HighestScore { get; set; }
+
+        // These properties will store the formatted values
+        public string FormattedPoints { get; set; }
+        public string FormattedHighestScore { get; set; }
     }
+
 }

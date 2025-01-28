@@ -3,6 +3,7 @@ using Statki.Class;
 using Statki.Database;
 using Statki.Database.Ranking;
 using Statki.Gameplay;
+using Statki.Profile_Managment;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -40,6 +41,8 @@ namespace Statki
         private StatisticsManager _statisticsManager;
 
         private StackPanel timerPanel;
+
+        private RankingWindow rankingWindow = new RankingWindow();
 
         public MainWindow()
         {
@@ -225,7 +228,7 @@ namespace Statki
         private void InitializePlayersAndTurnManager()
         {
             // Create Player 1 and Opponent, but do not assign the TurnManager yet
-            Player player1 = new Player("Gracz 1", gameGrid, null);
+            Player player1 = new Player("Player", gameGrid, null);
             Opponent opponent = new Opponent("Oponent", opponentGrid);
 
             // Initialize TurnManager singleton with players and readyButton
@@ -423,31 +426,30 @@ namespace Statki
 
         private void TurnManager_OnGameOver()
         {
-            // Domyślne wartości zmiennych
-            string message = "Nieoczekiwany wynik gry.";
+            // Default values
+            string message = "Unexpected game result.";
             string title = "Game Over";
 
-            // Pobieramy punkty gracza i przeciwnika
+            // Get player and opponent scores
             int playerScore = scoreManager.PlayerScore;
             int opponentScore = scoreManager.OpponentScore;
 
-            // Zmiana przejrzystości plansz
+            // Change opacity of grids
             gameGrid.Opacity = 0.2;
             opponentGrid.Opacity = 0.2;
 
             _statisticsManager.CreateOrUpdateStatistics();
-
             _statisticsManager.IncrementGamesPlayed();
 
             if (turnManager.Player1.AllShipsSunk())
             {
-                // Opponent wygrał
+                // Opponent won
                 message = "YOU LOSE\n\n";
-                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Twój wynik: {playerScore}\n";
-                message += $"Wynik przeciwnika: {opponentScore}";
+                message += $"Player 1 turns: {turnManager._player1Turns}\n";
+                message += $"Opponent turns: {turnManager._player2Turns}\n";
+                message += $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Your score: {playerScore.ToString("N0")}\n"; // Adding space as thousand separator
+                message += $"Opponent score: {opponentScore.ToString("N0")}";
                 title = "Game Over";
 
                 _statisticsManager.IncrementGamesLost();
@@ -456,13 +458,13 @@ namespace Statki
             }
             else if (turnManager.Player2.AllShipsSunk())
             {
-                // Player1 wygrał
+                // Player 1 won
                 message = "YOU WIN\n\n";
-                message += $"Liczba tur gracza 1: {turnManager._player1Turns}\n";
-                message += $"Liczba tur przeciwnika: {turnManager._player2Turns}\n";
-                message += $"Łączna liczba tur: {turnManager._player1Turns + turnManager._player2Turns}\n";
-                message += $"Twój wynik: {playerScore}\n";
-                message += $"Wynik przeciwnika: {opponentScore}";
+                message += $"Player 1 turns: {turnManager._player1Turns}\n";
+                message += $"Opponent turns: {turnManager._player2Turns}\n";
+                message += $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n";
+                message += $"Your score: {playerScore.ToString("N0")}\n"; // Adding space as thousand separator
+                message += $"Opponent score: {opponentScore.ToString("N0")}";
                 title = "Game Over";
 
                 _statisticsManager.IncrementGamesWon();
@@ -470,24 +472,20 @@ namespace Statki
                 _statisticsManager.UpdateHighestScore(playerScore);
             }
 
-            // Wyświetlamy okno z przyciskiem "Zagraj ponownie"
-            MessageBoxResult result = MessageBox.Show($"{message}\n\nCzy chcesz zagrać ponownie?", title, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            // Display the Game Over window with "Play Again" button
+            MessageBoxResult result = MessageBox.Show($"{message}\n\nWould you like to play again?", title, MessageBoxButton.YesNo, MessageBoxImage.Question);
 
             if (result == MessageBoxResult.Yes)
             {
                 ResetGame();
+                rankingWindow.Hide();
             }
             else
             {
-                Application.Current.Shutdown();
+                this.Hide();
+                StartupWindow startupWindow = new StartupWindow();
+                startupWindow.Show();
             }
-        }
-
-
-        public void GoToRanking()
-        {
-            var rankingWindow = new RankingWindow();
-            rankingWindow.Show();
         }
     }
 }

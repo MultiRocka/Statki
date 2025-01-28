@@ -33,8 +33,6 @@ namespace Statki.Board
         {
             this.Background = DefaultBackground;
             this.Click += BoardTile_Click;
-            //this.MouseEnter += BoardTile_MouseEnter;
-            //this.MouseLeave += BoardTile_MouseLeave;
             this.Style = CreateCustomStyle();
             
         }
@@ -72,7 +70,7 @@ namespace Statki.Board
             };
             isMouseOverTrigger.Setters.Add(new Setter(BackgroundProperty, Brushes.Transparent));
             isMouseOverTrigger.Setters.Add(new Setter(BorderBrushProperty, Brushes.DarkBlue));
-            isMouseOverTrigger.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(5))); // Zwiększenie grubości obramowania
+            isMouseOverTrigger.Setters.Add(new Setter(BorderThicknessProperty, new Thickness(5))); 
 
             style.Triggers.Add(isMouseOverTrigger);
 
@@ -96,9 +94,12 @@ namespace Statki.Board
         {
             IsOccupied = false;
             HitStatus = HitStatus.None;
-            AssignedShip = null; // Resetowanie przypisanego statku
-            this.Background = DefaultBackground;  // Ustawienie domyślnego tła
+            // Resetowanie przypisanego statku
+            AssignedShip = null;
+            // Ustawienie domyślnego tła
+            this.Background = DefaultBackground;
         }
+
 
 
         // Opcjonalnie: metoda do ustawiania tekstury lub animacji

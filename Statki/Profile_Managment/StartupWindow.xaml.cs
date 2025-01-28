@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.IO;
+using Statki.Database.Ranking;
 
 namespace Statki.Profile_Managment
 {
@@ -23,7 +24,7 @@ namespace Statki.Profile_Managment
         private string _loggedInUser;
 
         private string _sessionToken;
-        private const string SessionFilePath = "session_token.txt"; // Ścieżka do pliku z tokenem
+        private const string SessionFilePath = "user_session.txt"; // Ścieżka do pliku z tokenem
 
         public StartupWindow()
         {
@@ -98,6 +99,13 @@ namespace Statki.Profile_Managment
             var loginWindow = new LoginWindow();
             loginWindow.Show();
             this.Close();
+        }
+        private void RankingButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Przejdź do okna rankingu
+            var rankingWindow = new RankingWindow(); // Założyłem, że masz okno RankingWindow
+            rankingWindow.Show();
+            this.Close(); // Zamykamy okno startowe, ale możesz to zmienić, jeśli chcesz, by oba okna były otwarte
         }
 
     }
