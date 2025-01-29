@@ -54,7 +54,7 @@ namespace Statki.Profile_Managment
             }
 
             WelcomeText.Text = "You are not logged in.";
-            ActionButton.Content = "Log In";
+            ActionButton.Content = "Log in";
             _loggedInUser = null;
         }
 
