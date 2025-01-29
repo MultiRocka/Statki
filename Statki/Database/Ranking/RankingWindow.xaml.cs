@@ -34,18 +34,18 @@ namespace Statki.Database.Ranking
             if (isForHighestScore)
             {
                 query = @"
-            SELECT u.login, s.highest_score
-            FROM statistics s
-            JOIN users u ON u.id = s.user_id
-            ORDER BY s.highest_score DESC;";
+                SELECT u.login, s.highest_score
+                FROM statistics s
+                JOIN users u ON u.id = s.user_id
+                ORDER BY s.highest_score DESC;";
             }
             else
             {
                 query = @"
-            SELECT u.login, s.points
-            FROM statistics s
-            JOIN users u ON u.id = s.user_id
-            ORDER BY s.points DESC;";
+                SELECT u.login, s.points
+                FROM statistics s
+                JOIN users u ON u.id = s.user_id
+                ORDER BY s.points DESC;";
             }
 
             using (var connection = new NpgsqlConnection(ConnectionString))

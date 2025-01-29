@@ -9,22 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\you_lose.png" />
-    <None Remove="Assets\you_win.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Jbi.UnitOfWork.Npqsql" Version="1.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Assets\you_lose.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Assets\you_win.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
   </ItemGroup>
 
 </Project>

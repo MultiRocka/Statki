@@ -47,14 +47,14 @@ namespace Statki.Profile_Managment
             }
             else if (!IsValidEmail(email))
             {
-                EmailErrorLabel.Text = "The provided email is invalid.";
+                EmailErrorLabel.Text = "Please enter a valid email address.";
                 EmailErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
 
             if (string.IsNullOrEmpty(login))
             {
-                LoginErrorLabel.Text = "Username is required.";
+                LoginErrorLabel.Text = "Username cannot be empty.";
                 LoginErrorLabel.Visibility = Visibility.Visible;
                 isValid = false;
             }
