@@ -65,20 +65,23 @@ namespace Statki.Profile_Managment
                 isValid = false;
             }
 
-            if (!string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(password))
             {
-                if (!IsValidPassword(password))
-                {
-                    PasswordErrorLabel.Text = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
-                    PasswordErrorLabel.Visibility = Visibility.Visible;
-                    isValid = false;
-                }
-                else if (password != confirmPassword)
-                {
-                    ConfirmPasswordErrorLabel.Text = "Passwords do not match.";
-                    ConfirmPasswordErrorLabel.Visibility = Visibility.Visible;
-                    isValid = false;
-                }
+                PasswordErrorLabel.Text = "Password is required to update the profile.";
+                PasswordErrorLabel.Visibility = Visibility.Visible;
+                isValid = false;
+            }
+            else if (!IsValidPassword(password))
+            {
+                PasswordErrorLabel.Text = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
+                PasswordErrorLabel.Visibility = Visibility.Visible;
+                isValid = false;
+            }
+            else if (password != confirmPassword)
+            {
+                ConfirmPasswordErrorLabel.Text = "Passwords do not match.";
+                ConfirmPasswordErrorLabel.Visibility = Visibility.Visible;
+                isValid = false;
             }
 
             if (!isValid)

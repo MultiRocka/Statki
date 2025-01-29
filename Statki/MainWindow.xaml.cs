@@ -444,7 +444,7 @@ namespace Statki
             _statisticsManager.IncrementGamesPlayed();
 
             // Sprawdź, czy gracz przegrał
-            if (turnManager.Player2.AllShipsSunk())
+            if (turnManager.Player1.AllShipsSunk())
             {
                 // Przegrana
                 isWin = false;
@@ -460,7 +460,7 @@ namespace Statki
                 _statisticsManager.AddPoints(playerScore);
                 _statisticsManager.UpdateHighestScore(playerScore);
             }
-            else if (turnManager.Player1.AllShipsSunk())
+            else if (turnManager.Player2.AllShipsSunk())
             {
                 // Wygrana
                 isWin = true;
