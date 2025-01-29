@@ -449,7 +449,7 @@ namespace Statki
                 // Przegrana
                 isWin = false;
                 message = $"YOU LOSE\n\n" +
-                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                          $"Your turns: {turnManager._player1Turns}\n" +
                           $"Opponent turns: {turnManager._player2Turns}\n" +
                           $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
                           $"Your score: {playerScore.ToString("N0")}\n" +
@@ -464,8 +464,8 @@ namespace Statki
             {
                 // Wygrana
                 isWin = true;
-                message = $"YOU WIN\n\n" +
-                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                message = $"YOU WIN!!\n\n" +
+                          $"Your turns: {turnManager._player1Turns}\n" +
                           $"Opponent turns: {turnManager._player2Turns}\n" +
                           $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
                           $"Your score: {playerScore.ToString("N0")}\n" +

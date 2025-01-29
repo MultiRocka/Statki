@@ -24,11 +24,10 @@ namespace Statki
             InitializeComponent();
 
             // Ustaw obrazek i wiadomość w zależności od wyniku
-            if (!isWin)
+            if (isWin)
             {
                 Uri imageUri = new Uri("pack://application:,,,/Assets/you_win.png");
 
-                // Wczytujemy obrazek
                 ResultImage.Source = new BitmapImage(imageUri);
                 ResultMessage.Text = message;
             }
