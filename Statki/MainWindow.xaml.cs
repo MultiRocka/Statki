@@ -444,12 +444,12 @@ namespace Statki
             _statisticsManager.IncrementGamesPlayed();
 
             // Sprawdź, czy gracz przegrał
-            if (turnManager.Player1.AllShipsSunk())
+            if (turnManager.Player2.AllShipsSunk())
             {
                 // Przegrana
                 isWin = false;
                 message = $"YOU LOSE\n\n" +
-                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                          $"Your turns: {turnManager._player1Turns}\n" +
                           $"Opponent turns: {turnManager._player2Turns}\n" +
                           $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
                           $"Your score: {playerScore.ToString("N0")}\n" +
@@ -460,12 +460,12 @@ namespace Statki
                 _statisticsManager.AddPoints(playerScore);
                 _statisticsManager.UpdateHighestScore(playerScore);
             }
-            else if (turnManager.Player2.AllShipsSunk())
+            else if (turnManager.Player1.AllShipsSunk())
             {
                 // Wygrana
                 isWin = true;
-                message = $"YOU WIN\n\n" +
-                          $"Player 1 turns: {turnManager._player1Turns}\n" +
+                message = $"YOU WIN!!\n\n" +
+                          $"Your turns: {turnManager._player1Turns}\n" +
                           $"Opponent turns: {turnManager._player2Turns}\n" +
                           $"Total turns: {turnManager._player1Turns + turnManager._player2Turns}\n" +
                           $"Your score: {playerScore.ToString("N0")}\n" +

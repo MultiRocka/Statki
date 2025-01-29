@@ -52,7 +52,8 @@ namespace Statki.Profile_Managment
             }
             else if (!IsValidLogin(login))
             {
-                LoginErrorText.Text = "Username can contain only letters and numbers, up to 15 characters.";
+                LoginErrorText.Text = "Username can contain only letters and numbers," +
+                    " up to 15 characters.";
                 LoginErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }
@@ -65,7 +66,8 @@ namespace Statki.Profile_Managment
             }
             else if (!IsValidPassword(password))
             {
-                PasswordErrorText.Text = "Password must contain at least one uppercase letter, one lowercase letter, and one digit.";
+                PasswordErrorText.Text = "Password must contain at least one uppercase letter," +
+                    " one lowercase letter, and one digit.";
                 PasswordErrorText.Visibility = Visibility.Visible;
                 isValid = false;
             }

@@ -23,20 +23,18 @@ namespace Statki
         {
             InitializeComponent();
 
-            // Ustaw obrazek i wiadomość w zależności od wyniku
-            if (!isWin)
+            if (isWin)
             {
-                Uri imageUri = new Uri("pack://application:,,,/Assets/you_win.png");
-
-                // Wczytujemy obrazek
-                ResultImage.Source = new BitmapImage(imageUri);
+                // Emoji wygranej
+                ResultEmoji.Text = "🎉 🏆 🎉";  // Zwycięstwo
+                ResultEmoji.Foreground = new SolidColorBrush(Colors.Gold);  // Złoty kolor dla wygranej
                 ResultMessage.Text = message;
             }
             else
             {
-                Uri imageUri1 = new Uri("pack://application:,,,/Assets/you_lose.png");
-
-                ResultImage.Source = new BitmapImage(imageUri1);
+                // Emoji przegranej
+                ResultEmoji.Text = "☠️ 💀 ☠️";  // Czaszka dla przegranej
+                ResultEmoji.Foreground = new SolidColorBrush(Colors.Red);  // Czerwony kolor dla przegranej
                 ResultMessage.Text = message;
             }
         }

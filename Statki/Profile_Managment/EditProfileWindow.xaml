@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <!-- Back to the start screen -->
-        <Button Content="←" Grid.Row="1" Width="40" Height="40" Background="#3E8E41" Foreground="White" FontSize="18" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="2" 
+        <Button Content="←" Grid.Row="1" Width="40" Height="40" Background="#3A6EA5" Foreground="White" FontSize="18" FontWeight="Bold" BorderBrush="#4E4E6E" BorderThickness="2" 
                 HorizontalAlignment="Left" Click="BackButton_Click" />
 
         <!-- Header -->
